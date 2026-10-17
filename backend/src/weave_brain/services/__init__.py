@@ -1,5 +1,6 @@
 """Services package for WEAVE."""
 
+from weave_brain.services.chat_service import submit_question
 from weave_brain.services.graph_service import (
     BlastRadius,
     GraphService,
@@ -20,4 +21,5 @@ __all__ = [
     "ShortestPath",
     "build_health_score",
     "build_onboarding_brief",
+    "submit_question",
 ]
