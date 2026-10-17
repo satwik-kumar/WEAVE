@@ -7,6 +7,7 @@ import os
 from collections.abc import Generator
 from datetime import UTC, datetime
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from redis.exceptions import ResponseError
@@ -33,7 +34,7 @@ def writer_graph(monkeypatch: pytest.MonkeyPatch) -> Generator[Any, None, None]:
     if not os.getenv("FALKORDB_PORT"):
         monkeypatch.setenv("FALKORDB_PORT", "6379")
 
-    test_graph_name = os.getenv("FALKORDB_GRAPH_NAME") or "test_writer_graph"
+    test_graph_name = f"weave_test_writer_{uuid4().hex}"
     monkeypatch.setenv("FALKORDB_GRAPH_NAME", test_graph_name)
 
     graph = get_graph()
@@ -263,13 +264,9 @@ def test_property_collision_defense_live(writer_graph: Any) -> None:
     upsert_node(malicious, graph=writer_graph)
 
     # Node must exist with real-auth, not fake-spoofed
-    real = writer_graph.query(
-        "MATCH (n {id: 'service:real-auth'}) RETURN n.tech"
-    )
+    real = writer_graph.query("MATCH (n {id: 'service:real-auth'}) RETURN n.tech")
     assert len(real.result_set) == 1
     assert real.result_set[0][0] == "FastAPI"
 
-    fake = writer_graph.query(
-        "MATCH (n {id: 'service:fake-spoofed'}) RETURN count(n)"
-    )
+    fake = writer_graph.query("MATCH (n {id: 'service:fake-spoofed'}) RETURN count(n)")
     assert fake.result_set[0][0] == 0

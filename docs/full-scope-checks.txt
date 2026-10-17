@@ -1,0 +1,1115 @@
+Final local verification 2026-10-17. Live checks use an isolated seeded FalkorDB graph; browser run one fixtures, run two live. No paid provider calls or external deployment.
+
+WORKDIR: D:\WEAVE
+COMMAND: D:\WEAVE\backend\.venv\Scripts\python.exe scripts/validate_demo.py
+EXIT: 0
+=================================================================
+ WEAVE Brain - Demo Data Validation Checklist (Developer A)
+=================================================================
+ [PASS] All 6 demo JSON files exist and are valid JSON
+ [PASS] All records parse into SourceArtifact (19 artifacts)
+ [PASS] All 19 official frozen demo entity IDs present (19/19)
+ [PASS] All entity IDs follow canonical type:slug format
+ [PASS] Referential integrity (all relationship targets resolve to existing entities)
+ [PASS] Whitelisted relationship types (all edges use approved Cypher rels)
+ [PASS] Service dependency direction (:Service)-[:DEPENDS_ON]->(:Service)
+ [PASS] Decision lineage (:Decision)-[:DECIDES_FOR]->(:Service) and [:MOTIVATED_BY]->(:Incident)
+ [PASS] Decision supersedes direction (:Decision)-[:SUPERSEDES]->(:Decision)
+ [PASS] Intentional Gap 1: service:data-pipeline has NO owner (unowned service)
+ [PASS] Intentional Gap 2: decision:adr-002 has empty rationale
+ [PASS] Edge properties support (3-tuple on WORKED_ON edge)
+=================================================================
+ RESULT: ALL CHECKS PASSED (19/19 frozen entities verified)
+=================================================================
+
+
+WORKDIR: D:\WEAVE
+COMMAND: D:\WEAVE\backend\.venv\Scripts\python.exe scripts/seed_demo.py
+EXIT: 0
+============================================================
+ WEAVE Brain - Seeding Demo Data into Knowledge Graph
+============================================================
+ Source Directory: D:\WEAVE\data\demo
+ -> Initializing schema indexes...
+    Indexed 11 entity labels: Decision, Document, File, Incident, Person, Project, Repository, Service, Team, Test, Ticket
+ -> Loading structured demo JSON records...
+    Loaded 19 SourceArtifact records.
+ -> Executing two-phase batch upsert...
+------------------------------------------------------------
+ SYNC REPORT SUMMARY:
+  Source:            demo-seed
+  Records Processed: 19
+  Nodes Created:     0
+  Nodes Updated:     19
+  Edges Created:     0
+  Warnings:          0
+  Errors:            0
+============================================================
+ RESULT: SEED COMPLETED SUCCESSFULLY
+============================================================
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe sync --frozen
+EXIT: 0
+Checked 35 packages in 15ms
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff check . ../scripts
+EXIT: 0
+All checks passed!
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff format --check . ../scripts
+EXIT: 0
+50 files already formatted
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run pytest tests/unit/ -v
+EXIT: 0
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.7.0 -- D:\WEAVE\backend\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\WEAVE\backend
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 101 items
+
+tests/unit/test_api.py::test_chat_invalid[body0] PASSED                  [  0%]
+tests/unit/test_api.py::test_chat_invalid[body1] PASSED                  [  1%]
+tests/unit/test_api.py::test_chat_invalid[body2] PASSED                  [  2%]
+tests/unit/test_api.py::test_chat_invalid[body3] PASSED                  [  3%]
+tests/unit/test_api.py::test_chat_invalid[body4] PASSED                  [  4%]
+tests/unit/test_api.py::test_chat_contract[Who owns authentication?-service_overview] PASSED [  5%]
+tests/unit/test_api.py::test_chat_contract[What breaks if authentication goes down?-blast_radius] PASSED [  6%]
+tests/unit/test_api.py::test_chat_contract[Tell me about sales-unsupported] PASSED [  7%]
+tests/unit/test_api.py::test_chat_contract[Change impact of authentication-change_impact] PASSED [  8%]
+tests/unit/test_api.py::test_chat_contract[Why do authentication tokens expire?-decision_rationale] PASSED [  9%]
+tests/unit/test_api.py::test_chat_contract[Who are authentication experts?-expert_finder] PASSED [ 10%]
+tests/unit/test_api.py::test_overview_direction_and_nullability PASSED   [ 11%]
+tests/unit/test_api.py::test_blast_direction PASSED                      [ 12%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=0] PASSED [ 13%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=4] PASSED [ 14%]
+tests/unit/test_api.py::test_query_validation[/api/services/service:authentication-api/blast-radius?max_depth=4] PASSED [ 15%]
+tests/unit/test_api.py::test_query_validation[/api/search?q=%20] PASSED  [ 16%]
+tests/unit/test_api.py::test_query_validation[/api/search] PASSED        [ 17%]
+tests/unit/test_api.py::test_query_validation[/api/entities/not-an-id] PASSED [ 18%]
+tests/unit/test_api.py::test_query_validation[/api/graph/shortest-path?from_id=bad&to_id=bad] PASSED [ 19%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/entities/service:unknown] PASSED [ 20%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/services/service:unknown] PASSED [ 21%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/graph/neighborhood/service:unknown] PASSED [ 22%]
+tests/unit/test_api.py::test_slash_ids[repository:acme/auth-api] PASSED  [ 23%]
+tests/unit/test_api.py::test_slash_ids[repository%3Aacme%2Fauth-api] PASSED [ 24%]
+tests/unit/test_api.py::test_shortest_preserves_direction PASSED         [ 25%]
+tests/unit/test_api.py::test_database_error_and_recovery PASSED          [ 26%]
+tests/unit/test_api.py::test_fixture_mode_not_ready PASSED               [ 27%]
+tests/unit/test_api.py::test_no_production_fixture_fallback PASSED       [ 28%]
+tests/unit/test_api.py::test_graph_bounds_and_dangling_edges PASSED      [ 29%]
+tests/unit/test_api.py::test_cors_parsing[["https://example.com", "http://localhost:5173"]] PASSED [ 30%]
+tests/unit/test_api.py::test_cors_parsing[https://example.com, http://localhost:5173] PASSED [ 31%]
+tests/unit/test_api.py::test_graph_log_redaction PASSED                  [ 32%]
+tests/unit/test_api.py::test_unexpected_errors_are_safe_and_cors_readable PASSED [ 33%]
+tests/unit/test_api.py::test_env_file_and_process_precedence PASSED      [ 34%]
+tests/unit/test_api.py::test_invalid_origins_rejected[*] PASSED          [ 35%]
+tests/unit/test_api.py::test_invalid_origins_rejected[[]] PASSED         [ 36%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://user:password@example.com] PASSED [ 37%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://example.com/path] PASSED [ 38%]
+tests/unit/test_api.py::test_shortest_path_never_exceeds_three_hops PASSED [ 39%]
+tests/unit/test_graph_schema.py::test_entity_type_mapping_completeness PASSED [ 40%]
+tests/unit/test_graph_schema.py::test_get_label_for_unknown_type PASSED  [ 41%]
+tests/unit/test_graph_schema.py::test_whitelisted_labels PASSED          [ 42%]
+tests/unit/test_graph_schema.py::test_init_schema_creates_indexes_on_empty_graph PASSED [ 43%]
+tests/unit/test_graph_schema.py::test_init_schema_idempotency_with_existing_indexes PASSED [ 44%]
+tests/unit/test_graph_schema.py::test_init_schema_handles_already_indexed_response_error PASSED [ 45%]
+tests/unit/test_graph_schema.py::test_init_schema_propagates_unrelated_database_error PASSED [ 46%]
+tests/unit/test_graph_writer.py::test_whitelisted_relationships_completeness PASSED [ 47%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_two_tuple PASSED [ 48%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_three_tuple PASSED [ 49%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_type PASSED [ 50%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_target PASSED [ 51%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_collision_defense PASSED [ 52%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_nested_dict_json PASSED [ 53%]
+tests/unit/test_graph_writer.py::test_upsert_node_created_vs_updated PASSED [ 54%]
+tests/unit/test_graph_writer.py::test_upsert_relationship_indexed_matching PASSED [ 55%]
+tests/unit/test_graph_writer.py::test_upsert_edge_alias PASSED           [ 56%]
+tests/unit/test_graph_writer.py::test_write_artifacts_alias PASSED       [ 57%]
+tests/unit/test_graph_writer.py::test_upsert_many_two_phase_and_reporting PASSED [ 58%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_valid PASSED [ 59%]
+tests/unit/test_ingestion_connectors.py::test_load_json_directory_all_demo_data PASSED [ 60%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_not_found PASSED [ 61%]
+tests/unit/test_ingestion_connectors.py::test_load_json_directory_not_found PASSED [ 62%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_invalid_root_type PASSED [ 63%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_validation_error PASSED [ 64%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_with_frontmatter PASSED [ 65%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_without_frontmatter PASSED [ 66%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_directory PASSED [ 67%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_not_found PASSED [ 68%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_file_ast_and_imports PASSED [ 69%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_file_syntax_error_handling PASSED [ 70%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_repository_contains_and_test_detection PASSED [ 71%]
+tests/unit/test_ingestion_demo_data.py::test_demo_files_exist_and_parse PASSED [ 72%]
+tests/unit/test_ingestion_demo_data.py::test_official_frozen_demo_ids_present PASSED [ 73%]
+tests/unit/test_ingestion_demo_data.py::test_referential_integrity PASSED [ 74%]
+tests/unit/test_ingestion_demo_data.py::test_graph_edge_directions PASSED [ 75%]
+tests/unit/test_ingestion_demo_data.py::test_intentional_knowledge_gaps PASSED [ 76%]
+tests/unit/test_ingestion_demo_data.py::test_edge_properties_and_writer_compatibility PASSED [ 77%]
+tests/unit/test_queries_mapper.py::test_mapper_fixtures_to_graph_view PASSED [ 78%]
+tests/unit/test_queries_mapper.py::test_mapper_staleness_and_freshness PASSED [ 79%]
+tests/unit/test_queries_mapper.py::test_mapper_superseded_decision PASSED [ 80%]
+tests/unit/test_queries_mapper.py::test_mapper_highlighted_paths PASSED  [ 81%]
+tests/unit/test_queries_mapper.py::test_to_evidence_items_explicit_and_synthesis PASSED [ 82%]
+tests/unit/test_queries_mapper.py::test_query_unpacking_helpers PASSED   [ 83%]
+tests/unit/test_queries_mapper.py::test_query_path_unpacking_canonical_ids PASSED [ 84%]
+tests/unit/test_queries_mapper.py::test_queries_empty_returns_safely PASSED [ 85%]
+tests/unit/test_query_limits.py::test_query_limit_surfaces_omitted_rows_without_unbounded_output PASSED [ 86%]
+tests/unit/test_reports_agent.py::test_health_gaps_and_onboarding_contracts PASSED [ 87%]
+tests/unit/test_reports_agent.py::test_timeline_order_and_unique_router_registration PASSED [ 88%]
+tests/unit/test_reports_agent.py::test_experts_have_real_project_evidence_and_impact_never_fabricates_tests PASSED [ 89%]
+tests/unit/test_reports_agent.py::test_openai_actual_http_adapter_and_agent_citation_roundtrip PASSED [ 90%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[Uncited invented claim.] PASSED [ 91%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[Claim [S999]] PASSED [ 92%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[service:invented [S1]] PASSED [ 93%]
+tests/unit/test_reports_agent.py::test_provider_failure_is_503_without_retrieval_fallback PASSED [ 94%]
+tests/unit/test_reports_agent.py::test_gemini_stateless_wire_protocol PASSED [ 95%]
+tests/unit/test_reports_agent.py::test_runaway_model_tool_calls_are_bounded PASSED [ 96%]
+tests/unit/test_reports_agent.py::test_other_provider_full_tool_roundtrip[gemini] PASSED [ 97%]
+tests/unit/test_reports_agent.py::test_other_provider_full_tool_roundtrip[anthropic] PASSED [ 98%]
+tests/unit/test_seed_demo.py::test_run_seed_with_mock_graph PASSED       [ 99%]
+tests/unit/test_seed_demo.py::test_run_reset_clears_and_reseeds PASSED   [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 101 passed, 1 warning in 1.53s ========================
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run pytest tests/ -q
+EXIT: 0
+........................................................................ [ 60%]
+...............................................                          [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+119 passed, 1 warning in 2.53s
+
+
+WORKDIR: D:\WEAVE
+COMMAND: D:\WEAVE\backend\.venv\Scripts\python.exe backend/dist/live_acceptance.py
+EXIT: 1
+D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+Traceback (most recent call last):
+  File "D:\WEAVE\backend\dist\live_acceptance.py", line 17, in <module>
+    assert result.intent==intent and result.graph and result.evidence and result.suggested_followups
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe build --wheel
+EXIT: 0
+Building wheel...
+Successfully built dist\backend-0.1.0-py3-none-any.whl
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run --isolated --no-project --with ./dist/backend-0.1.0-py3-none-any.whl python -c "from weave_brain.api.main import app; print(app.title)"
+EXIT: 0
+Installed 28 packages in 133ms
+WEAVE
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd ci
+EXIT: 0
+
+added 172 packages, and audited 173 packages in 29s
+
+89 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run lint
+EXIT: 0
+
+> frontend@0.0.0 lint
+> oxlint
+
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd test
+EXIT: 0
+
+> frontend@0.0.0 test
+> vitest run src/store
+
+
+ RUN  v5.0.5 D:/WEAVE/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  18:42:33
+   Duration  489ms (transform 57%, import 24%, tests 16%, worker 3%)
+
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run build
+EXIT: 0
+
+> frontend@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 409 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                           0.58 kB │ gzip:   0.36 kB
+dist/assets/index-8JsbiImD.css            8.81 kB │ gzip:   2.63 kB
+dist/assets/GraphCanvas-DLioOiRN.css     15.41 kB │ gzip:   2.56 kB
+dist/assets/OnboardingPage-CbVAnIXE.js    2.77 kB │ gzip:   1.11 kB
+dist/assets/HealthPage-DV7MBnEg.js        3.28 kB │ gzip:   1.33 kB
+dist/assets/GraphCanvas-BEAs1UpQ.js     242.62 kB │ gzip:  79.48 kB
+dist/assets/index-DlfdnG7t.js           412.95 kB │ gzip: 128.96 kB
+
+✓ built in 661ms
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd audit
+EXIT: 0
+found 0 vulnerabilities
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run test:browser
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test
+
+[WebServer] INFO:     Started server process [11960]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)
+[WebServer] (node:27136) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:26788) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\ask-brain.spec.ts:3:1 › fixture HTTP slice: ask, inspect, expand, deduplicate, filter and replace graph (1.9s)
+  ✓  2 tests\browser\ask-brain.spec.ts:71:1 › HTTP failure preserves the previous answer and graph, then retry recovers (1.1s)
+  ✓  3 tests\browser\ask-brain.spec.ts:93:1 › mobile layout and direct-route reload stay usable (1.2s)
+  ✓  4 tests\browser\ask-brain.spec.ts:116:1 › followups, decision timeline and context-menu connection use the shared API (2.3s)
+  ✓  5 tests\browser\ask-brain.spec.ts:156:1 › health and onboarding reports work through navigation and direct reloads (2.8s)
+
+  5 passed (14.4s)
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run test:browser
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test
+
+[WebServer] INFO:     Started server process [19104]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)
+[WebServer] (node:4976) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:12540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\live.spec.ts:3:1 › real seeded FalkorDB: grounded answers, inspection, expansion and report routes (3.8s)
+
+  1 passed (9.6s)
+
+
+WORKDIR: D:\WEAVE
+COMMAND: docker build -t weave-api:local backend
+EXIT: 0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 390B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for ghcr.io/astral-sh/uv:0.13.1
+#2 ...
+
+#3 [auth] library/python:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#4 [internal] load metadata for docker.io/library/python:3.12-slim
+#4 ...
+
+#2 [internal] load metadata for ghcr.io/astral-sh/uv:0.13.1
+#2 DONE 1.2s
+
+#4 [internal] load metadata for docker.io/library/python:3.12-slim
+#4 DONE 2.1s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 107B 0.0s done
+#5 DONE 0.0s
+
+#6 FROM ghcr.io/astral-sh/uv:0.13.1@sha256:4a1f3666816dafadd20ceb71eac9a7d56d7ef30279f7d64048519ab901ada336
+#6 resolve ghcr.io/astral-sh/uv:0.13.1@sha256:4a1f3666816dafadd20ceb71eac9a7d56d7ef30279f7d64048519ab901ada336 0.0s done
+#6 DONE 0.0s
+
+#7 [stage-0 1/7] FROM docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+#7 resolve docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1 0.0s done
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 241.89kB 0.1s done
+#8 DONE 0.1s
+
+#9 [stage-0 2/7] COPY --from=ghcr.io/astral-sh/uv:0.13.1 /uv /uvx /bin/
+#9 CACHED
+
+#10 [stage-0 3/7] WORKDIR /app
+#10 CACHED
+
+#11 [stage-0 4/7] COPY pyproject.toml uv.lock README.md ./
+#11 CACHED
+
+#12 [stage-0 5/7] COPY src ./src
+#12 DONE 0.0s
+
+#13 [stage-0 6/7] RUN uv sync --frozen --no-dev
+#13 0.422 Using CPython 3.12.15 interpreter at: /usr/local/bin/python3
+#13 0.422 Creating virtual environment at: .venv
+#13 0.445    Building backend @ file:///app
+#13 0.458       Built backend @ file:///app
+#13 0.918 Downloading pydantic-core (2.1MiB)
+#13 0.919 Downloading uvloop (4.3MiB)
+#13 8.046  Downloaded pydantic-core
+#13 10.61  Downloaded uvloop
+#13 10.61 Prepared 29 packages in 10.18s
+#13 10.65 Installed 29 packages in 41ms
+#13 11.10 Bytecode compiled 697 files in 444ms
+#13 11.10  + annotated-doc==0.0.5
+#13 11.10  + annotated-types==0.8.0
+#13 11.10  + anyio==4.15.1
+#13 11.10  + backend==0.1.0 (from file:///app)
+#13 11.10  + certifi==2026.7.22
+#13 11.10  + click==8.5.0
+#13 11.10  + falkordb==1.8.0
+#13 11.10  + fastapi==0.143.3
+#13 11.10  + h11==0.16.0
+#13 11.10  + httpcore==1.0.9
+#13 11.10  + httptools==0.9.0
+#13 11.10  + httpx==0.28.1
+#13 11.10  + idna==3.20
+#13 11.10  + opentelemetry-api==1.45.1
+#13 11.10  + pydantic==2.14.1
+#13 11.10  + pydantic-core==2.50.1
+#13 11.10  + pydantic-settings==2.16.0
+#13 11.10  + python-dateutil==2.9.0.post0
+#13 11.10  + python-dotenv==1.2.4
+#13 11.10  + pyyaml==6.0.3
+#13 11.10  + redis==8.1.0
+#13 11.10  + six==1.17.0
+#13 11.10  + starlette==1.8.0
+#13 11.10  + typing-extensions==4.16.0
+#13 11.10  + typing-inspection==0.4.4
+#13 11.10  + uvicorn==0.54.0
+#13 11.10  + uvloop==0.23.0
+#13 11.10  + watchfiles==1.3.0
+#13 11.10  + websockets==17.2
+#13 DONE 11.2s
+
+#14 [stage-0 7/7] RUN useradd --create-home appuser
+#14 DONE 0.3s
+
+#15 exporting to image
+#15 exporting layers
+#15 exporting layers 2.6s done
+#15 exporting manifest sha256:2057194abcc765da2bcef43bfd91638b302a14a31d55ddeae1d282114d3185b2 done
+#15 exporting config sha256:cd6f92423a97b2416000ed8f25ecc77772677f5398f46b9a460430e3a7ac53ef done
+#15 exporting attestation manifest sha256:467ba01ffe02f0a12844567cf84564330df556a21db758e5369f844c31e137ac 0.0s done
+#15 exporting manifest list sha256:2d1ea806a6d823d7ef2bf25a7b9401329a17caa156835890f75122463afc9451 done
+#15 naming to docker.io/library/weave-api:local done
+#15 unpacking to docker.io/library/weave-api:local
+#15 unpacking to docker.io/library/weave-api:local 0.6s done
+#15 DONE 3.2s
+
+
+WORKDIR: D:\WEAVE
+COMMAND: git diff --check
+EXIT: 0
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/pyproject.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/uv.lock', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/App.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/App.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/index.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/main.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/types/api.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/vite.config.ts', LF will be replaced by CRLF the next time Git touches it
+
+
+WORKDIR: D:\WEAVE
+COMMAND: git check-ignore WEAVE_Dev_C_Execution_Guide.pdf .env
+EXIT: 0
+WEAVE_Dev_C_Execution_Guide.pdf
+.env
+
+RERUN after UUID-isolating integration fixtures. Final local verification 2026-10-17. Live checks use an isolated seeded FalkorDB graph; browser run one fixtures, run two live. No paid provider calls or external deployment.
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff check . ../scripts
+EXIT: 1
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests\integration\test_queries.py:3:1
+   |
+ 1 |   """Live integration tests for core FalkorDB queries, mapper, and health score."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import os
+ 6 | | from datetime import UTC, datetime
+ 7 | | from uuid import uuid4
+ 8 | |
+ 9 | | import pytest
+10 | | from redis.exceptions import ConnectionError as RedisConnectionError
+11 | | from redis.exceptions import ResponseError
+12 | | from weave_brain.domain.models import GraphView, SourceArtifact
+13 | | from weave_brain.graph.client import get_graph
+14 | | from weave_brain.graph.mapper import to_evidence_items, to_graph_view
+15 | | from weave_brain.graph.queries import (
+16 | |     find_experts,
+17 | |     find_shortest_path,
+18 | |     get_blast_radius,
+19 | |     get_decisions_for_service,
+20 | |     get_health_score,
+21 | |     get_knowledge_gaps,
+22 | |     get_neighborhood,
+23 | |     get_service_dependents,
+24 | |     get_service_overview,
+25 | |     search_entities,
+26 | | )
+27 | | from weave_brain.graph.schema import init_schema
+28 | | from weave_brain.graph.writer import upsert_many
+   | |________________________________________________^
+29 |
+30 |   pytestmark = pytest.mark.skipif(
+   |
+help: Organize imports
+   |
+11 | from redis.exceptions import ResponseError
+12 +
+13 | from weave_brain.domain.models import GraphView, SourceArtifact
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests\integration\test_schema.py:3:1
+   |
+ 1 |   """Integration tests for FalkorDB schema initialization and idempotency."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import contextlib
+ 6 | | import os
+ 7 | | from collections.abc import Generator
+ 8 | | from typing import Any
+ 9 | | from uuid import uuid4
+10 | |
+11 | | import pytest
+12 | | from redis.exceptions import ResponseError
+13 | | from weave_brain.graph.client import get_graph
+14 | | from weave_brain.graph.schema import (
+15 | |     IDENTITY_PROPERTY,
+16 | |     WHITELISTED_LABELS,
+17 | |     get_existing_indexes,
+18 | |     init_schema,
+19 | | )
+   | |_^
+help: Organize imports
+   |
+12 | from redis.exceptions import ResponseError
+13 +
+14 | from weave_brain.graph.client import get_graph
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests\integration\test_smoke.py:3:1
+   |
+ 1 |   """Smoke and idempotency integration tests for FalkorDB."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import os
+ 6 | | from collections.abc import Generator
+ 7 | | from typing import Any
+ 8 | | from uuid import uuid4
+ 9 | |
+10 | | import pytest
+11 | | from weave_brain.domain.models import EvidenceItem, GraphView
+12 | | from weave_brain.graph.client import ConfigurationError, get_graph
+13 | | from weave_brain.graph.fixtures import (
+14 | |     find_experts_stub,
+15 | |     get_blast_radius_stub,
+16 | |     get_decisions_for_service_stub,
+17 | |     get_neighborhood_stub,
+18 | |     get_service_overview_stub,
+19 | | )
+   | |_^
+help: Organize imports
+   |
+10 | import pytest
+11 +
+12 | from weave_brain.domain.models import EvidenceItem, GraphView
+   |
+
+I001 [*] Import block is un-sorted or un-formatted
+  --> tests\integration\test_writer.py:3:1
+   |
+ 1 |   """Integration tests for FalkorDB graph writer and two-phase batch upsert."""
+ 2 |
+ 3 | / from __future__ import annotations
+ 4 | |
+ 5 | | import contextlib
+ 6 | | import os
+ 7 | | from collections.abc import Generator
+ 8 | | from datetime import UTC, datetime
+ 9 | | from typing import Any
+10 | | from uuid import uuid4
+11 | |
+12 | | import pytest
+13 | | from redis.exceptions import ResponseError
+14 | | from weave_brain.domain.models import SourceArtifact
+15 | | from weave_brain.graph.client import get_graph
+16 | | from weave_brain.graph.schema import init_schema
+17 | | from weave_brain.graph.writer import (
+18 | |     upsert_many,
+19 | |     upsert_node,
+20 | |     upsert_relationship,
+21 | |     write_artifacts,
+22 | | )
+   | |_^
+help: Organize imports
+   |
+13 | from redis.exceptions import ResponseError
+14 +
+15 | from weave_brain.domain.models import SourceArtifact
+   |
+
+Found 4 errors.
+[*] 4 fixable with `--fix`.
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff format --check . ../scripts
+EXIT: 0
+50 files already formatted
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run pytest tests/unit/ -v
+EXIT: 0
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.7.0 -- D:\WEAVE\backend\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\WEAVE\backend
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 101 items
+
+tests/unit/test_api.py::test_chat_invalid[body0] PASSED                  [  0%]
+tests/unit/test_api.py::test_chat_invalid[body1] PASSED                  [  1%]
+tests/unit/test_api.py::test_chat_invalid[body2] PASSED                  [  2%]
+tests/unit/test_api.py::test_chat_invalid[body3] PASSED                  [  3%]
+tests/unit/test_api.py::test_chat_invalid[body4] PASSED                  [  4%]
+tests/unit/test_api.py::test_chat_contract[Who owns authentication?-service_overview] PASSED [  5%]
+tests/unit/test_api.py::test_chat_contract[What breaks if authentication goes down?-blast_radius] PASSED [  6%]
+tests/unit/test_api.py::test_chat_contract[Tell me about sales-unsupported] PASSED [  7%]
+tests/unit/test_api.py::test_chat_contract[Change impact of authentication-change_impact] PASSED [  8%]
+tests/unit/test_api.py::test_chat_contract[Why do authentication tokens expire?-decision_rationale] PASSED [  9%]
+tests/unit/test_api.py::test_chat_contract[Who are authentication experts?-expert_finder] PASSED [ 10%]
+tests/unit/test_api.py::test_overview_direction_and_nullability PASSED   [ 11%]
+tests/unit/test_api.py::test_blast_direction PASSED                      [ 12%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=0] PASSED [ 13%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=4] PASSED [ 14%]
+tests/unit/test_api.py::test_query_validation[/api/services/service:authentication-api/blast-radius?max_depth=4] PASSED [ 15%]
+tests/unit/test_api.py::test_query_validation[/api/search?q=%20] PASSED  [ 16%]
+tests/unit/test_api.py::test_query_validation[/api/search] PASSED        [ 17%]
+tests/unit/test_api.py::test_query_validation[/api/entities/not-an-id] PASSED [ 18%]
+tests/unit/test_api.py::test_query_validation[/api/graph/shortest-path?from_id=bad&to_id=bad] PASSED [ 19%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/entities/service:unknown] PASSED [ 20%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/services/service:unknown] PASSED [ 21%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/graph/neighborhood/service:unknown] PASSED [ 22%]
+tests/unit/test_api.py::test_slash_ids[repository:acme/auth-api] PASSED  [ 23%]
+tests/unit/test_api.py::test_slash_ids[repository%3Aacme%2Fauth-api] PASSED [ 24%]
+tests/unit/test_api.py::test_shortest_preserves_direction PASSED         [ 25%]
+tests/unit/test_api.py::test_database_error_and_recovery PASSED          [ 26%]
+tests/unit/test_api.py::test_fixture_mode_not_ready PASSED               [ 27%]
+tests/unit/test_api.py::test_no_production_fixture_fallback PASSED       [ 28%]
+tests/unit/test_api.py::test_graph_bounds_and_dangling_edges PASSED      [ 29%]
+tests/unit/test_api.py::test_cors_parsing[["https://example.com", "http://localhost:5173"]] PASSED [ 30%]
+tests/unit/test_api.py::test_cors_parsing[https://example.com, http://localhost:5173] PASSED [ 31%]
+tests/unit/test_api.py::test_graph_log_redaction PASSED                  [ 32%]
+tests/unit/test_api.py::test_unexpected_errors_are_safe_and_cors_readable PASSED [ 33%]
+tests/unit/test_api.py::test_env_file_and_process_precedence PASSED      [ 34%]
+tests/unit/test_api.py::test_invalid_origins_rejected[*] PASSED          [ 35%]
+tests/unit/test_api.py::test_invalid_origins_rejected[[]] PASSED         [ 36%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://user:password@example.com] PASSED [ 37%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://example.com/path] PASSED [ 38%]
+tests/unit/test_api.py::test_shortest_path_never_exceeds_three_hops PASSED [ 39%]
+tests/unit/test_graph_schema.py::test_entity_type_mapping_completeness PASSED [ 40%]
+tests/unit/test_graph_schema.py::test_get_label_for_unknown_type PASSED  [ 41%]
+tests/unit/test_graph_schema.py::test_whitelisted_labels PASSED          [ 42%]
+tests/unit/test_graph_schema.py::test_init_schema_creates_indexes_on_empty_graph PASSED [ 43%]
+tests/unit/test_graph_schema.py::test_init_schema_idempotency_with_existing_indexes PASSED [ 44%]
+tests/unit/test_graph_schema.py::test_init_schema_handles_already_indexed_response_error PASSED [ 45%]
+tests/unit/test_graph_schema.py::test_init_schema_propagates_unrelated_database_error PASSED [ 46%]
+tests/unit/test_graph_writer.py::test_whitelisted_relationships_completeness PASSED [ 47%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_two_tuple PASSED [ 48%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_three_tuple PASSED [ 49%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_type PASSED [ 50%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_target PASSED [ 51%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_collision_defense PASSED [ 52%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_nested_dict_json PASSED [ 53%]
+tests/unit/test_graph_writer.py::test_upsert_node_created_vs_updated PASSED [ 54%]
+tests/unit/test_graph_writer.py::test_upsert_relationship_indexed_matching PASSED [ 55%]
+tests/unit/test_graph_writer.py::test_upsert_edge_alias PASSED           [ 56%]
+tests/unit/test_graph_writer.py::test_write_artifacts_alias PASSED       [ 57%]
+tests/unit/test_graph_writer.py::test_upsert_many_two_phase_and_reporting PASSED [ 58%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_valid PASSED [ 59%]
+tests/unit/test_ingestion_connectors.py::test_load_json_directory_all_demo_data PASSED [ 60%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_not_found PASSED [ 61%]
+tests/unit/test_ingestion_connectors.py::test_load_json_directory_not_found PASSED [ 62%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_invalid_root_type PASSED [ 63%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_validation_error PASSED [ 64%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_with_frontmatter PASSED [ 65%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_without_frontmatter PASSED [ 66%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_directory PASSED [ 67%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_not_found PASSED [ 68%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_file_ast_and_imports PASSED [ 69%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_file_syntax_error_handling PASSED [ 70%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_repository_contains_and_test_detection PASSED [ 71%]
+tests/unit/test_ingestion_demo_data.py::test_demo_files_exist_and_parse PASSED [ 72%]
+tests/unit/test_ingestion_demo_data.py::test_official_frozen_demo_ids_present PASSED [ 73%]
+tests/unit/test_ingestion_demo_data.py::test_referential_integrity PASSED [ 74%]
+tests/unit/test_ingestion_demo_data.py::test_graph_edge_directions PASSED [ 75%]
+tests/unit/test_ingestion_demo_data.py::test_intentional_knowledge_gaps PASSED [ 76%]
+tests/unit/test_ingestion_demo_data.py::test_edge_properties_and_writer_compatibility PASSED [ 77%]
+tests/unit/test_queries_mapper.py::test_mapper_fixtures_to_graph_view PASSED [ 78%]
+tests/unit/test_queries_mapper.py::test_mapper_staleness_and_freshness PASSED [ 79%]
+tests/unit/test_queries_mapper.py::test_mapper_superseded_decision PASSED [ 80%]
+tests/unit/test_queries_mapper.py::test_mapper_highlighted_paths PASSED  [ 81%]
+tests/unit/test_queries_mapper.py::test_to_evidence_items_explicit_and_synthesis PASSED [ 82%]
+tests/unit/test_queries_mapper.py::test_query_unpacking_helpers PASSED   [ 83%]
+tests/unit/test_queries_mapper.py::test_query_path_unpacking_canonical_ids PASSED [ 84%]
+tests/unit/test_queries_mapper.py::test_queries_empty_returns_safely PASSED [ 85%]
+tests/unit/test_query_limits.py::test_query_limit_surfaces_omitted_rows_without_unbounded_output PASSED [ 86%]
+tests/unit/test_reports_agent.py::test_health_gaps_and_onboarding_contracts PASSED [ 87%]
+tests/unit/test_reports_agent.py::test_timeline_order_and_unique_router_registration PASSED [ 88%]
+tests/unit/test_reports_agent.py::test_experts_have_real_project_evidence_and_impact_never_fabricates_tests PASSED [ 89%]
+tests/unit/test_reports_agent.py::test_openai_actual_http_adapter_and_agent_citation_roundtrip PASSED [ 90%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[Uncited invented claim.] PASSED [ 91%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[Claim [S999]] PASSED [ 92%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[service:invented [S1]] PASSED [ 93%]
+tests/unit/test_reports_agent.py::test_provider_failure_is_503_without_retrieval_fallback PASSED [ 94%]
+tests/unit/test_reports_agent.py::test_gemini_stateless_wire_protocol PASSED [ 95%]
+tests/unit/test_reports_agent.py::test_runaway_model_tool_calls_are_bounded PASSED [ 96%]
+tests/unit/test_reports_agent.py::test_other_provider_full_tool_roundtrip[gemini] PASSED [ 97%]
+tests/unit/test_reports_agent.py::test_other_provider_full_tool_roundtrip[anthropic] PASSED [ 98%]
+tests/unit/test_seed_demo.py::test_run_seed_with_mock_graph PASSED       [ 99%]
+tests/unit/test_seed_demo.py::test_run_reset_clears_and_reseeds PASSED   [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 101 passed, 1 warning in 1.83s ========================
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run pytest tests/ -q
+EXIT: 0
+........................................................................ [ 60%]
+...............................................                          [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+119 passed, 1 warning in 2.41s
+
+
+WORKDIR: D:\WEAVE
+COMMAND: D:\WEAVE\backend\.venv\Scripts\python.exe backend/dist/live_acceptance.py
+EXIT: 0
+D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+LIVE PASS: service_overview 9 nodes 6 sources
+LIVE PASS: decision_rationale 5 nodes 3 sources
+LIVE PASS: blast_radius 3 nodes 2 sources
+LIVE PASS: expert_finder 16 nodes 2 sources
+LIVE PASS: change_impact 16 nodes 7 sources
+LIVE PASS: reports, real source IDs, repository slash IDs, search and inspection
+LIVE PASS: actual closed-port failure 503; liveness and restored real database readiness 200
+No shared graph reset; isolated graph: weave_verify_29ead159456b
+
+RERUN after UUID-isolating integration fixtures. Final local verification 2026-10-17. Live checks use an isolated seeded FalkorDB graph; browser run one fixtures, run two live. No paid provider calls or external deployment.
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff check . ../scripts
+EXIT: 0
+All checks passed!
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff format --check . ../scripts
+EXIT: 0
+50 files already formatted
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run pytest tests/unit/ -v
+EXIT: 0
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.7.0 -- D:\WEAVE\backend\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\WEAVE\backend
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 101 items
+
+tests/unit/test_api.py::test_chat_invalid[body0] PASSED                  [  0%]
+tests/unit/test_api.py::test_chat_invalid[body1] PASSED                  [  1%]
+tests/unit/test_api.py::test_chat_invalid[body2] PASSED                  [  2%]
+tests/unit/test_api.py::test_chat_invalid[body3] PASSED                  [  3%]
+tests/unit/test_api.py::test_chat_invalid[body4] PASSED                  [  4%]
+tests/unit/test_api.py::test_chat_contract[Who owns authentication?-service_overview] PASSED [  5%]
+tests/unit/test_api.py::test_chat_contract[What breaks if authentication goes down?-blast_radius] PASSED [  6%]
+tests/unit/test_api.py::test_chat_contract[Tell me about sales-unsupported] PASSED [  7%]
+tests/unit/test_api.py::test_chat_contract[Change impact of authentication-change_impact] PASSED [  8%]
+tests/unit/test_api.py::test_chat_contract[Why do authentication tokens expire?-decision_rationale] PASSED [  9%]
+tests/unit/test_api.py::test_chat_contract[Who are authentication experts?-expert_finder] PASSED [ 10%]
+tests/unit/test_api.py::test_overview_direction_and_nullability PASSED   [ 11%]
+tests/unit/test_api.py::test_blast_direction PASSED                      [ 12%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=0] PASSED [ 13%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=4] PASSED [ 14%]
+tests/unit/test_api.py::test_query_validation[/api/services/service:authentication-api/blast-radius?max_depth=4] PASSED [ 15%]
+tests/unit/test_api.py::test_query_validation[/api/search?q=%20] PASSED  [ 16%]
+tests/unit/test_api.py::test_query_validation[/api/search] PASSED        [ 17%]
+tests/unit/test_api.py::test_query_validation[/api/entities/not-an-id] PASSED [ 18%]
+tests/unit/test_api.py::test_query_validation[/api/graph/shortest-path?from_id=bad&to_id=bad] PASSED [ 19%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/entities/service:unknown] PASSED [ 20%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/services/service:unknown] PASSED [ 21%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/graph/neighborhood/service:unknown] PASSED [ 22%]
+tests/unit/test_api.py::test_slash_ids[repository:acme/auth-api] PASSED  [ 23%]
+tests/unit/test_api.py::test_slash_ids[repository%3Aacme%2Fauth-api] PASSED [ 24%]
+tests/unit/test_api.py::test_shortest_preserves_direction PASSED         [ 25%]
+tests/unit/test_api.py::test_database_error_and_recovery PASSED          [ 26%]
+tests/unit/test_api.py::test_fixture_mode_not_ready PASSED               [ 27%]
+tests/unit/test_api.py::test_no_production_fixture_fallback PASSED       [ 28%]
+tests/unit/test_api.py::test_graph_bounds_and_dangling_edges PASSED      [ 29%]
+tests/unit/test_api.py::test_cors_parsing[["https://example.com", "http://localhost:5173"]] PASSED [ 30%]
+tests/unit/test_api.py::test_cors_parsing[https://example.com, http://localhost:5173] PASSED [ 31%]
+tests/unit/test_api.py::test_graph_log_redaction PASSED                  [ 32%]
+tests/unit/test_api.py::test_unexpected_errors_are_safe_and_cors_readable PASSED [ 33%]
+tests/unit/test_api.py::test_env_file_and_process_precedence PASSED      [ 34%]
+tests/unit/test_api.py::test_invalid_origins_rejected[*] PASSED          [ 35%]
+tests/unit/test_api.py::test_invalid_origins_rejected[[]] PASSED         [ 36%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://user:password@example.com] PASSED [ 37%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://example.com/path] PASSED [ 38%]
+tests/unit/test_api.py::test_shortest_path_never_exceeds_three_hops PASSED [ 39%]
+tests/unit/test_graph_schema.py::test_entity_type_mapping_completeness PASSED [ 40%]
+tests/unit/test_graph_schema.py::test_get_label_for_unknown_type PASSED  [ 41%]
+tests/unit/test_graph_schema.py::test_whitelisted_labels PASSED          [ 42%]
+tests/unit/test_graph_schema.py::test_init_schema_creates_indexes_on_empty_graph PASSED [ 43%]
+tests/unit/test_graph_schema.py::test_init_schema_idempotency_with_existing_indexes PASSED [ 44%]
+tests/unit/test_graph_schema.py::test_init_schema_handles_already_indexed_response_error PASSED [ 45%]
+tests/unit/test_graph_schema.py::test_init_schema_propagates_unrelated_database_error PASSED [ 46%]
+tests/unit/test_graph_writer.py::test_whitelisted_relationships_completeness PASSED [ 47%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_two_tuple PASSED [ 48%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_three_tuple PASSED [ 49%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_type PASSED [ 50%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_target PASSED [ 51%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_collision_defense PASSED [ 52%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_nested_dict_json PASSED [ 53%]
+tests/unit/test_graph_writer.py::test_upsert_node_created_vs_updated PASSED [ 54%]
+tests/unit/test_graph_writer.py::test_upsert_relationship_indexed_matching PASSED [ 55%]
+tests/unit/test_graph_writer.py::test_upsert_edge_alias PASSED           [ 56%]
+tests/unit/test_graph_writer.py::test_write_artifacts_alias PASSED       [ 57%]
+tests/unit/test_graph_writer.py::test_upsert_many_two_phase_and_reporting PASSED [ 58%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_valid PASSED [ 59%]
+tests/unit/test_ingestion_connectors.py::test_load_json_directory_all_demo_data PASSED [ 60%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_not_found PASSED [ 61%]
+tests/unit/test_ingestion_connectors.py::test_load_json_directory_not_found PASSED [ 62%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_invalid_root_type PASSED [ 63%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_validation_error PASSED [ 64%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_with_frontmatter PASSED [ 65%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_without_frontmatter PASSED [ 66%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_directory PASSED [ 67%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_not_found PASSED [ 68%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_file_ast_and_imports PASSED [ 69%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_file_syntax_error_handling PASSED [ 70%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_repository_contains_and_test_detection PASSED [ 71%]
+tests/unit/test_ingestion_demo_data.py::test_demo_files_exist_and_parse PASSED [ 72%]
+tests/unit/test_ingestion_demo_data.py::test_official_frozen_demo_ids_present PASSED [ 73%]
+tests/unit/test_ingestion_demo_data.py::test_referential_integrity PASSED [ 74%]
+tests/unit/test_ingestion_demo_data.py::test_graph_edge_directions PASSED [ 75%]
+tests/unit/test_ingestion_demo_data.py::test_intentional_knowledge_gaps PASSED [ 76%]
+tests/unit/test_ingestion_demo_data.py::test_edge_properties_and_writer_compatibility PASSED [ 77%]
+tests/unit/test_queries_mapper.py::test_mapper_fixtures_to_graph_view PASSED [ 78%]
+tests/unit/test_queries_mapper.py::test_mapper_staleness_and_freshness PASSED [ 79%]
+tests/unit/test_queries_mapper.py::test_mapper_superseded_decision PASSED [ 80%]
+tests/unit/test_queries_mapper.py::test_mapper_highlighted_paths PASSED  [ 81%]
+tests/unit/test_queries_mapper.py::test_to_evidence_items_explicit_and_synthesis PASSED [ 82%]
+tests/unit/test_queries_mapper.py::test_query_unpacking_helpers PASSED   [ 83%]
+tests/unit/test_queries_mapper.py::test_query_path_unpacking_canonical_ids PASSED [ 84%]
+tests/unit/test_queries_mapper.py::test_queries_empty_returns_safely PASSED [ 85%]
+tests/unit/test_query_limits.py::test_query_limit_surfaces_omitted_rows_without_unbounded_output PASSED [ 86%]
+tests/unit/test_reports_agent.py::test_health_gaps_and_onboarding_contracts PASSED [ 87%]
+tests/unit/test_reports_agent.py::test_timeline_order_and_unique_router_registration PASSED [ 88%]
+tests/unit/test_reports_agent.py::test_experts_have_real_project_evidence_and_impact_never_fabricates_tests PASSED [ 89%]
+tests/unit/test_reports_agent.py::test_openai_actual_http_adapter_and_agent_citation_roundtrip PASSED [ 90%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[Uncited invented claim.] PASSED [ 91%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[Claim [S999]] PASSED [ 92%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[service:invented [S1]] PASSED [ 93%]
+tests/unit/test_reports_agent.py::test_provider_failure_is_503_without_retrieval_fallback PASSED [ 94%]
+tests/unit/test_reports_agent.py::test_gemini_stateless_wire_protocol PASSED [ 95%]
+tests/unit/test_reports_agent.py::test_runaway_model_tool_calls_are_bounded PASSED [ 96%]
+tests/unit/test_reports_agent.py::test_other_provider_full_tool_roundtrip[gemini] PASSED [ 97%]
+tests/unit/test_reports_agent.py::test_other_provider_full_tool_roundtrip[anthropic] PASSED [ 98%]
+tests/unit/test_seed_demo.py::test_run_seed_with_mock_graph PASSED       [ 99%]
+tests/unit/test_seed_demo.py::test_run_reset_clears_and_reseeds PASSED   [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 101 passed, 1 warning in 1.52s ========================
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run pytest tests/ -q
+EXIT: 0
+........................................................................ [ 60%]
+...............................................                          [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+119 passed, 1 warning in 2.36s
+
+
+WORKDIR: D:\WEAVE
+COMMAND: D:\WEAVE\backend\.venv\Scripts\python.exe backend/dist/live_acceptance.py
+EXIT: 0
+D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+LIVE PASS: service_overview 9 nodes 6 sources
+LIVE PASS: decision_rationale 5 nodes 3 sources
+LIVE PASS: blast_radius 3 nodes 2 sources
+LIVE PASS: expert_finder 16 nodes 2 sources
+LIVE PASS: change_impact 16 nodes 7 sources
+LIVE PASS: reports, real source IDs, repository slash IDs, search and inspection
+LIVE PASS: actual closed-port failure 503; liveness and restored real database readiness 200
+No shared graph reset; isolated graph: weave_verify_29ead159456b
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run lint
+EXIT: 0
+
+> frontend@0.0.0 lint
+> oxlint
+
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd test
+EXIT: 0
+
+> frontend@0.0.0 test
+> vitest run src/store
+
+
+ RUN  v5.0.5 D:/WEAVE/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  18:44:07
+   Duration  350ms (tests 37%, import 30%, transform 27%, worker 6%)
+
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run build
+EXIT: 0
+
+> frontend@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 409 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                           0.58 kB │ gzip:   0.36 kB
+dist/assets/index-8JsbiImD.css            8.81 kB │ gzip:   2.63 kB
+dist/assets/GraphCanvas-DLioOiRN.css     15.41 kB │ gzip:   2.56 kB
+dist/assets/OnboardingPage-D28BNTzs.js    2.77 kB │ gzip:   1.11 kB
+dist/assets/HealthPage-Bqa14Lyj.js        3.28 kB │ gzip:   1.33 kB
+dist/assets/GraphCanvas-lIrPLPv8.js     242.89 kB │ gzip:  79.60 kB
+dist/assets/index-Bk_y_QSt.js           412.95 kB │ gzip: 128.96 kB
+
+✓ built in 717ms
+
+
+COMMAND: docker run -d --name weave-api-verify-cfe35cac --network weave_default -p 127.0.0.1::8127 -e PORT=8127 -e HOST=0.0.0.0 -e FALKORDB_HOST=falkordb -e FALKORDB_PORT=6379 -e FALKORDB_GRAPH_NAME=weave_verify_29ead159456b -e CHAT_MODE=retrieval -e DEVELOPMENT_FIXTURES=false weave-api:local
+PASS: final image readiness 200; real graph chat 200; ownership grounded, 9 nodes.
+Removed only the temporary local verification container.
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run test:browser
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test
+
+[WebServer] INFO:     Started server process [9884]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)
+[WebServer] (node:16464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 5 tests using 1 worker
+
+(node:7944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\ask-brain.spec.ts:3:1 › fixture HTTP slice: ask, inspect, expand, deduplicate, filter and replace graph (1.9s)
+  ✓  2 tests\browser\ask-brain.spec.ts:71:1 › HTTP failure preserves the previous answer and graph, then retry recovers (1.0s)
+  ✓  3 tests\browser\ask-brain.spec.ts:93:1 › mobile layout and direct-route reload stay usable (1.2s)
+  ✓  4 tests\browser\ask-brain.spec.ts:116:1 › followups, decision timeline and context-menu connection use the shared API (1.8s)
+  ✓  5 tests\browser\ask-brain.spec.ts:156:1 › health and onboarding reports work through navigation and direct reloads (2.8s)
+
+  5 passed (14.9s)
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run test:browser
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test
+
+[WebServer] INFO:     Started server process [24652]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)
+[WebServer] (node:704) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:13660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\live.spec.ts:3:1 › real seeded FalkorDB: grounded answers, inspection, expansion and report routes (3.1s)
+
+  1 passed (8.9s)
+
+
+WORKDIR: D:\WEAVE
+COMMAND: docker build -t weave-api:local backend
+EXIT: 0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 390B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 ...
+
+#3 [internal] load metadata for ghcr.io/astral-sh/uv:0.13.1
+#3 DONE 1.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 1.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 107B 0.0s done
+#4 DONE 0.0s
+
+#5 FROM ghcr.io/astral-sh/uv:0.13.1@sha256:4a1f3666816dafadd20ceb71eac9a7d56d7ef30279f7d64048519ab901ada336
+#5 resolve ghcr.io/astral-sh/uv:0.13.1@sha256:4a1f3666816dafadd20ceb71eac9a7d56d7ef30279f7d64048519ab901ada336 0.0s done
+#5 DONE 0.0s
+
+#6 [stage-0 1/7] FROM docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+#6 resolve docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1 0.0s done
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 5.46kB 0.0s done
+#7 DONE 0.0s
+
+#8 [stage-0 2/7] COPY --from=ghcr.io/astral-sh/uv:0.13.1 /uv /uvx /bin/
+#8 CACHED
+
+#9 [stage-0 6/7] RUN uv sync --frozen --no-dev
+#9 CACHED
+
+#10 [stage-0 4/7] COPY pyproject.toml uv.lock README.md ./
+#10 CACHED
+
+#11 [stage-0 3/7] WORKDIR /app
+#11 CACHED
+
+#12 [stage-0 5/7] COPY src ./src
+#12 CACHED
+
+#13 [stage-0 7/7] RUN useradd --create-home appuser
+#13 CACHED
+
+#14 exporting to image
+#14 exporting layers done
+#14 exporting manifest sha256:2057194abcc765da2bcef43bfd91638b302a14a31d55ddeae1d282114d3185b2
+#14 exporting manifest sha256:2057194abcc765da2bcef43bfd91638b302a14a31d55ddeae1d282114d3185b2 done
+#14 exporting config sha256:cd6f92423a97b2416000ed8f25ecc77772677f5398f46b9a460430e3a7ac53ef done
+#14 exporting attestation manifest sha256:c517a5822a8442ff8bc5634d2623a93a398ee913283550327f9bf2a88e30941e 0.0s done
+#14 exporting manifest list sha256:965d9a791b23cf89d8cbf919101ae579afc1be5339032be6e3ac99a976d9c24c 0.0s done
+#14 naming to docker.io/library/weave-api:local done
+#14 unpacking to docker.io/library/weave-api:local 0.0s done
+#14 DONE 0.1s
+
+
+PREVIEW CHECK: Invoke-WebRequest http://127.0.0.1:8000/api/health -> 200; http://127.0.0.1:5173 -> 200. Live video exists: 457975 bytes. Branch feat/c/api-frontend. git diff --cached --name-only: empty.

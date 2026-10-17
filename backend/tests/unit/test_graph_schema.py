@@ -33,7 +33,9 @@ class MockGraph:
         self.executed_queries: list[str] = []
         self.query_error = query_error
 
-    def query(self, cypher: str, params: dict[str, Any] | None = None) -> MockQueryResult:
+    def query(
+        self, cypher: str, params: dict[str, Any] | None = None
+    ) -> MockQueryResult:
         self.executed_queries.append(cypher)
         if cypher == "CALL db.indexes()":
             header = [[1, "label"], [1, "properties"]]

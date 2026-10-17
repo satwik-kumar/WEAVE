@@ -19,3 +19,8 @@ dist/
 # Data
 *.log
 data/generated/
+
+# Local reference supplied by the user; never include in commits
+WEAVE_Dev_C_Execution_Guide.pdf
+frontend/test-results/
+frontend/playwright-report/

@@ -1,0 +1,592 @@
+Fresh audit, 2026-10-17. No implementation source changed. Isolated browser ports 5174/8011 preserve existing previews.
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe sync --frozen
+LIVE_BROWSER: 0
+EXIT: 0
+Checked 35 packages in 2ms
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff check . ../scripts
+LIVE_BROWSER: 0
+EXIT: 0
+All checks passed!
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff format --check . ../scripts
+LIVE_BROWSER: 0
+EXIT: 0
+50 files already formatted
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run pytest tests/unit/ -v
+LIVE_BROWSER: 0
+EXIT: 0
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.7.0 -- D:\WEAVE\backend\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\WEAVE\backend
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 101 items
+
+tests/unit/test_api.py::test_chat_invalid[body0] PASSED                  [  0%]
+tests/unit/test_api.py::test_chat_invalid[body1] PASSED                  [  1%]
+tests/unit/test_api.py::test_chat_invalid[body2] PASSED                  [  2%]
+tests/unit/test_api.py::test_chat_invalid[body3] PASSED                  [  3%]
+tests/unit/test_api.py::test_chat_invalid[body4] PASSED                  [  4%]
+tests/unit/test_api.py::test_chat_contract[Who owns authentication?-service_overview] PASSED [  5%]
+tests/unit/test_api.py::test_chat_contract[What breaks if authentication goes down?-blast_radius] PASSED [  6%]
+tests/unit/test_api.py::test_chat_contract[Tell me about sales-unsupported] PASSED [  7%]
+tests/unit/test_api.py::test_chat_contract[Change impact of authentication-change_impact] PASSED [  8%]
+tests/unit/test_api.py::test_chat_contract[Why do authentication tokens expire?-decision_rationale] PASSED [  9%]
+tests/unit/test_api.py::test_chat_contract[Who are authentication experts?-expert_finder] PASSED [ 10%]
+tests/unit/test_api.py::test_overview_direction_and_nullability PASSED   [ 11%]
+tests/unit/test_api.py::test_blast_direction PASSED                      [ 12%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=0] PASSED [ 13%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=4] PASSED [ 14%]
+tests/unit/test_api.py::test_query_validation[/api/services/service:authentication-api/blast-radius?max_depth=4] PASSED [ 15%]
+tests/unit/test_api.py::test_query_validation[/api/search?q=%20] PASSED  [ 16%]
+tests/unit/test_api.py::test_query_validation[/api/search] PASSED        [ 17%]
+tests/unit/test_api.py::test_query_validation[/api/entities/not-an-id] PASSED [ 18%]
+tests/unit/test_api.py::test_query_validation[/api/graph/shortest-path?from_id=bad&to_id=bad] PASSED [ 19%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/entities/service:unknown] PASSED [ 20%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/services/service:unknown] PASSED [ 21%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/graph/neighborhood/service:unknown] PASSED [ 22%]
+tests/unit/test_api.py::test_slash_ids[repository:acme/auth-api] PASSED  [ 23%]
+tests/unit/test_api.py::test_slash_ids[repository%3Aacme%2Fauth-api] PASSED [ 24%]
+tests/unit/test_api.py::test_shortest_preserves_direction PASSED         [ 25%]
+tests/unit/test_api.py::test_database_error_and_recovery PASSED          [ 26%]
+tests/unit/test_api.py::test_fixture_mode_not_ready PASSED               [ 27%]
+tests/unit/test_api.py::test_no_production_fixture_fallback PASSED       [ 28%]
+tests/unit/test_api.py::test_graph_bounds_and_dangling_edges PASSED      [ 29%]
+tests/unit/test_api.py::test_cors_parsing[["https://example.com", "http://localhost:5173"]] PASSED [ 30%]
+tests/unit/test_api.py::test_cors_parsing[https://example.com, http://localhost:5173] PASSED [ 31%]
+tests/unit/test_api.py::test_graph_log_redaction PASSED                  [ 32%]
+tests/unit/test_api.py::test_unexpected_errors_are_safe_and_cors_readable PASSED [ 33%]
+tests/unit/test_api.py::test_env_file_and_process_precedence PASSED      [ 34%]
+tests/unit/test_api.py::test_invalid_origins_rejected[*] PASSED          [ 35%]
+tests/unit/test_api.py::test_invalid_origins_rejected[[]] PASSED         [ 36%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://user:password@example.com] PASSED [ 37%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://example.com/path] PASSED [ 38%]
+tests/unit/test_api.py::test_shortest_path_never_exceeds_three_hops PASSED [ 39%]
+tests/unit/test_graph_schema.py::test_entity_type_mapping_completeness PASSED [ 40%]
+tests/unit/test_graph_schema.py::test_get_label_for_unknown_type PASSED  [ 41%]
+tests/unit/test_graph_schema.py::test_whitelisted_labels PASSED          [ 42%]
+tests/unit/test_graph_schema.py::test_init_schema_creates_indexes_on_empty_graph PASSED [ 43%]
+tests/unit/test_graph_schema.py::test_init_schema_idempotency_with_existing_indexes PASSED [ 44%]
+tests/unit/test_graph_schema.py::test_init_schema_handles_already_indexed_response_error PASSED [ 45%]
+tests/unit/test_graph_schema.py::test_init_schema_propagates_unrelated_database_error PASSED [ 46%]
+tests/unit/test_graph_writer.py::test_whitelisted_relationships_completeness PASSED [ 47%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_two_tuple PASSED [ 48%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_three_tuple PASSED [ 49%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_type PASSED [ 50%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_target PASSED [ 51%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_collision_defense PASSED [ 52%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_nested_dict_json PASSED [ 53%]
+tests/unit/test_graph_writer.py::test_upsert_node_created_vs_updated PASSED [ 54%]
+tests/unit/test_graph_writer.py::test_upsert_relationship_indexed_matching PASSED [ 55%]
+tests/unit/test_graph_writer.py::test_upsert_edge_alias PASSED           [ 56%]
+tests/unit/test_graph_writer.py::test_write_artifacts_alias PASSED       [ 57%]
+tests/unit/test_graph_writer.py::test_upsert_many_two_phase_and_reporting PASSED [ 58%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_valid PASSED [ 59%]
+tests/unit/test_ingestion_connectors.py::test_load_json_directory_all_demo_data PASSED [ 60%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_not_found PASSED [ 61%]
+tests/unit/test_ingestion_connectors.py::test_load_json_directory_not_found PASSED [ 62%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_invalid_root_type PASSED [ 63%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_validation_error PASSED [ 64%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_with_frontmatter PASSED [ 65%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_without_frontmatter PASSED [ 66%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_directory PASSED [ 67%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_not_found PASSED [ 68%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_file_ast_and_imports PASSED [ 69%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_file_syntax_error_handling PASSED [ 70%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_repository_contains_and_test_detection PASSED [ 71%]
+tests/unit/test_ingestion_demo_data.py::test_demo_files_exist_and_parse PASSED [ 72%]
+tests/unit/test_ingestion_demo_data.py::test_official_frozen_demo_ids_present PASSED [ 73%]
+tests/unit/test_ingestion_demo_data.py::test_referential_integrity PASSED [ 74%]
+tests/unit/test_ingestion_demo_data.py::test_graph_edge_directions PASSED [ 75%]
+tests/unit/test_ingestion_demo_data.py::test_intentional_knowledge_gaps PASSED [ 76%]
+tests/unit/test_ingestion_demo_data.py::test_edge_properties_and_writer_compatibility PASSED [ 77%]
+tests/unit/test_queries_mapper.py::test_mapper_fixtures_to_graph_view PASSED [ 78%]
+tests/unit/test_queries_mapper.py::test_mapper_staleness_and_freshness PASSED [ 79%]
+tests/unit/test_queries_mapper.py::test_mapper_superseded_decision PASSED [ 80%]
+tests/unit/test_queries_mapper.py::test_mapper_highlighted_paths PASSED  [ 81%]
+tests/unit/test_queries_mapper.py::test_to_evidence_items_explicit_and_synthesis PASSED [ 82%]
+tests/unit/test_queries_mapper.py::test_query_unpacking_helpers PASSED   [ 83%]
+tests/unit/test_queries_mapper.py::test_query_path_unpacking_canonical_ids PASSED [ 84%]
+tests/unit/test_queries_mapper.py::test_queries_empty_returns_safely PASSED [ 85%]
+tests/unit/test_query_limits.py::test_query_limit_surfaces_omitted_rows_without_unbounded_output PASSED [ 86%]
+tests/unit/test_reports_agent.py::test_health_gaps_and_onboarding_contracts PASSED [ 87%]
+tests/unit/test_reports_agent.py::test_timeline_order_and_unique_router_registration PASSED [ 88%]
+tests/unit/test_reports_agent.py::test_experts_have_real_project_evidence_and_impact_never_fabricates_tests PASSED [ 89%]
+tests/unit/test_reports_agent.py::test_openai_actual_http_adapter_and_agent_citation_roundtrip PASSED [ 90%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[Uncited invented claim.] PASSED [ 91%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[Claim [S999]] PASSED [ 92%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[service:invented [S1]] PASSED [ 93%]
+tests/unit/test_reports_agent.py::test_provider_failure_is_503_without_retrieval_fallback PASSED [ 94%]
+tests/unit/test_reports_agent.py::test_gemini_stateless_wire_protocol PASSED [ 95%]
+tests/unit/test_reports_agent.py::test_runaway_model_tool_calls_are_bounded PASSED [ 96%]
+tests/unit/test_reports_agent.py::test_other_provider_full_tool_roundtrip[gemini] PASSED [ 97%]
+tests/unit/test_reports_agent.py::test_other_provider_full_tool_roundtrip[anthropic] PASSED [ 98%]
+tests/unit/test_seed_demo.py::test_run_seed_with_mock_graph PASSED       [ 99%]
+tests/unit/test_seed_demo.py::test_run_reset_clears_and_reseeds PASSED   [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 101 passed, 1 warning in 1.64s ========================
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run pytest tests/ -q
+LIVE_BROWSER: 0
+EXIT: 0
+........................................................................ [ 60%]
+...............................................                          [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+119 passed, 1 warning in 1.98s
+
+
+WORKDIR: D:\WEAVE
+COMMAND: D:\WEAVE\backend\.venv\Scripts\python.exe scripts/validate_demo.py
+LIVE_BROWSER: 0
+EXIT: 0
+=================================================================
+ WEAVE Brain - Demo Data Validation Checklist (Developer A)
+=================================================================
+ [PASS] All 6 demo JSON files exist and are valid JSON
+ [PASS] All records parse into SourceArtifact (19 artifacts)
+ [PASS] All 19 official frozen demo entity IDs present (19/19)
+ [PASS] All entity IDs follow canonical type:slug format
+ [PASS] Referential integrity (all relationship targets resolve to existing entities)
+ [PASS] Whitelisted relationship types (all edges use approved Cypher rels)
+ [PASS] Service dependency direction (:Service)-[:DEPENDS_ON]->(:Service)
+ [PASS] Decision lineage (:Decision)-[:DECIDES_FOR]->(:Service) and [:MOTIVATED_BY]->(:Incident)
+ [PASS] Decision supersedes direction (:Decision)-[:SUPERSEDES]->(:Decision)
+ [PASS] Intentional Gap 1: service:data-pipeline has NO owner (unowned service)
+ [PASS] Intentional Gap 2: decision:adr-002 has empty rationale
+ [PASS] Edge properties support (3-tuple on WORKED_ON edge)
+=================================================================
+ RESULT: ALL CHECKS PASSED (19/19 frozen entities verified)
+=================================================================
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd ci --dry-run --ignore-scripts
+LIVE_BROWSER: 0
+EXIT: 0
+
+up to date in 765ms
+
+89 packages are looking for funding
+  run `npm fund` for details
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run lint
+LIVE_BROWSER: 0
+EXIT: 0
+
+> frontend@0.0.0 lint
+> oxlint
+
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd test
+LIVE_BROWSER: 0
+EXIT: 0
+
+> frontend@0.0.0 test
+> vitest run src/store
+
+
+ RUN  v5.0.5 D:/WEAVE/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  23:08:46
+   Duration  318ms (tests 36%, import 32%, transform 26%, worker 6%)
+
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run build
+LIVE_BROWSER: 0
+EXIT: 0
+
+> frontend@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 823 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                           1.43 kB │ gzip:   0.70 kB
+dist/assets/GraphCanvas-DLioOiRN.css     15.41 kB │ gzip:   2.56 kB
+dist/assets/index-CyC5axjX.css           20.13 kB │ gzip:   5.15 kB
+dist/assets/OnboardingPage-CK_gWnul.js    2.77 kB │ gzip:   1.11 kB
+dist/assets/HealthPage-DfJmHiZT.js        3.28 kB │ gzip:   1.33 kB
+dist/assets/GraphCanvas-CGhZQrcA.js     381.94 kB │ gzip: 124.96 kB
+dist/assets/index-CcEdApU5.js           418.16 kB │ gzip: 130.83 kB
+
+✓ built in 476ms
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd audit
+LIVE_BROWSER: 0
+EXIT: 0
+found 0 vulnerabilities
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run test:browser -- --config node_modules/.cache/weave-audit/playwright.config.ts
+LIVE_BROWSER: 0
+EXIT: 1
+
+> frontend@0.0.0 test:browser
+> playwright test --config node_modules/.cache/weave-audit/playwright.config.ts
+
+Error: D:\WEAVE\frontend\node_modules\.cache\weave-audit\playwright.config.ts does not exist
+    at resolveConfigFile2 (D:\WEAVE\frontend\node_modules\playwright\lib\common\index.js:1498:11)
+    at resolveConfigLocation (D:\WEAVE\frontend\node_modules\playwright\lib\common\index.js:1479:30)
+    at Object.loadConfigFromFile (D:\WEAVE\frontend\node_modules\playwright\lib\common\index.js:1508:27)
+    at runTests (D:\WEAVE\frontend\node_modules\playwright\lib\cli\testActions.js:44:51)
+    at _Command.<anonymous> (D:\WEAVE\frontend\node_modules\playwright\lib\program.js:55:45)
+    at _Command.listener [as _actionHandler] (D:\WEAVE\frontend\node_modules\playwright-core\lib\utilsBundle.js:54088:17)
+    at D:\WEAVE\frontend\node_modules\playwright-core\lib\utilsBundle.js:54946:20
+    at _Command._chainOrCall (D:\WEAVE\frontend\node_modules\playwright-core\lib\utilsBundle.js:54854:12)
+    at _Command._parseCommand (D:\WEAVE\frontend\node_modules\playwright-core\lib\utilsBundle.js:54944:27)
+    at D:\WEAVE\frontend\node_modules\playwright-core\lib\utilsBundle.js:54755:27
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run test:browser -- --config node_modules/.cache/weave-audit/playwright.config.ts live.spec.ts
+LIVE_BROWSER: 1
+EXIT: 1
+
+> frontend@0.0.0 test:browser
+> playwright test --config node_modules/.cache/weave-audit/playwright.config.ts live.spec.ts
+
+Error: Stripping types is currently unsupported for files under node_modules, for "D:\WEAVE\frontend\node_modules\.cache\weave-audit\playwright.config.ts"
+    at stripTypeScriptModuleTypes (node:internal/modules/typescript:189:11)
+    at Object.getFileProtocolModuleFormat [as file:] (node:internal/modules/esm/get_format:206:26)
+    at defaultGetFormat (node:internal/modules/esm/get_format:283:36)
+    at defaultLoadSync (node:internal/modules/esm/load:161:16)
+    at ModuleLoader.#loadAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:802:12)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at load (D:\WEAVE\frontend\node_modules\playwright\lib\common\index.js:850:12)
+    at nextStep (node:internal/modules/customization_hooks:189:26)
+    at loadWithHooks (node:internal/modules/customization_hooks:374:18)
+    at ModuleLoader.#loadSync (node:internal/modules/esm/loader:825:16)
+    at ModuleLoader.load (node:internal/modules/esm/loader:783:26)
+    at ModuleLoader.loadAndTranslate (node:internal/modules/esm/loader:494:31)
+    at ModuleLoader.#getOrCreateModuleJobAfterResolve (node:internal/modules/esm/loader:560:36)
+    at afterResolve (node:internal/modules/esm/loader:607:52)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:613:12)
+    at node:internal/modules/esm/loader:632:32
+    at TracingChannel.tracePromise (node:diagnostics_channel:362:14)
+    at ModuleLoader.import (node:internal/modules/esm/loader:628:21)
+    at defaultImportModuleDynamicallyForScript (node:internal/modules/esm/utils:239:31)
+    at importModuleDynamicallyCallback (node:internal/modules/esm/utils:263:12)
+    at eval (eval at esmImport (D:\WEAVE\frontend\node_modules\playwright\lib\common\index.js:1092:29), <anonymous>:1:1)
+    at esmImport (D:\WEAVE\frontend\node_modules\playwright\lib\common\index.js:1092:29)
+    at requireOrImport (D:\WEAVE\frontend\node_modules\playwright\lib\common\index.js:1096:18)
+    at loadUserConfig (D:\WEAVE\frontend\node_modules\playwright\lib\common\index.js:1283:52)
+    at loadConfig (D:\WEAVE\frontend\node_modules\playwright\lib\common\index.js:1290:28)
+    at processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at Object.loadConfigFromFile (D:\WEAVE\frontend\node_modules\playwright\lib\common\index.js:1508:10)
+    at runTests (D:\WEAVE\frontend\node_modules\playwright\lib\cli\testActions.js:44:18)
+    at _Command.<anonymous> (D:\WEAVE\frontend\node_modules\playwright\lib\program.js:55:7) {
+  code: 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING'
+}
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run build -- --outDir ../backend/dist/audit/production
+LIVE_BROWSER: 0
+EXIT: 0
+
+> frontend@0.0.0 build
+> tsc -b && vite build --outDir ../backend/dist/audit/production
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 823 modules transformed.
+
+(!) outDir D:\WEAVE\backend\dist\audit\production is not inside project root and will not be emptied.
+Use --emptyOutDir to override.
+
+rendering chunks...
+computing gzip size...
+../backend/dist/audit/production/index.html                           1.43 kB │ gzip:   0.70 kB
+../backend/dist/audit/production/assets/GraphCanvas-DLioOiRN.css     15.41 kB │ gzip:   2.56 kB
+../backend/dist/audit/production/assets/index-CyC5axjX.css           20.13 kB │ gzip:   5.15 kB
+../backend/dist/audit/production/assets/OnboardingPage-CudC0zZk.js    2.77 kB │ gzip:   1.11 kB
+../backend/dist/audit/production/assets/HealthPage-TT15NGlf.js        3.28 kB │ gzip:   1.33 kB
+../backend/dist/audit/production/assets/GraphCanvas-56rId2OJ.js     381.94 kB │ gzip: 124.96 kB
+../backend/dist/audit/production/assets/index-tyRBf7HL.js           418.16 kB │ gzip: 130.84 kB
+
+✓ built in 483ms
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe build --wheel
+LIVE_BROWSER: 0
+EXIT: 0
+Building wheel...
+Successfully built dist\backend-0.1.0-py3-none-any.whl
+
+
+WORKDIR: D:\WEAVE
+COMMAND: D:\WEAVE\.agents\skills\impeccable\scripts\impeccable.cmd detect frontend/src --json
+LIVE_BROWSER: 0
+EXIT: 0
+[]
+
+
+AUDIT HARNESS CORRECTION: Playwright excludes node_modules TypeScript from transform; temporary config changed to native MJS. Earlier browser exit 1 was config-loader failure before any app test ran.
+COMMAND: npm.cmd run test:browser -- --config node_modules/.cache/weave-audit/playwright.config.mjs
+LIVE_BROWSER: False
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test --config node_modules/.cache/weave-audit/playwright.config.mjs
+
+[WebServer] INFO:     Started server process [21032]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8011 (Press CTRL+C to quit)
+[WebServer] (node:27752) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:25224) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\ask-brain.spec.ts:3:1 › fixture HTTP slice: ask, inspect, expand, deduplicate, filter and replace graph (1.9s)
+  ✓  2 tests\browser\ask-brain.spec.ts:71:1 › HTTP failure preserves the previous answer and graph, then retry recovers (689ms)
+  ✓  3 tests\browser\ask-brain.spec.ts:93:1 › mobile layout and direct-route reload stay usable (812ms)
+  ✓  4 tests\browser\ask-brain.spec.ts:116:1 › followups, decision timeline and context-menu connection use the shared API (2.0s)
+  ✓  5 tests\browser\ask-brain.spec.ts:156:1 › health and onboarding reports work through navigation and direct reloads (2.1s)
+  ✓  6 tests\browser\theme.spec.ts:5:1 › reference design: both themes across empty, loading, populated, details, expansion and error states (10.0s)
+[WebServer] 11:10:22 pm [vite] (client) [console.warn] You have Reduced Motion enabled on your device. Animations may not appear as expected.. For more information and steps for solving, visit https://motion.dev/troubleshooting/reduced-motion-disabled
+[WebServer] 11:10:22 pm [vite] (client) [console.warn] You have Reduced Motion enabled on your device. Animations may not appear as expected.. For more information and steps for solving, visit https://motion.dev/troubleshooting/reduced-motion-disabled
+  ✓  7 tests\browser\theme.spec.ts:145:1 › theme bootstrap, persistence, system updates, keyboard access and reduced motion (1.3s)
+  ✓  8 tests\browser\theme.spec.ts:206:1 › theme control remains usable when browser storage is blocked (339ms)
+  ✓  9 tests\browser\visual.spec.ts:3:1 › redesigned workspace: empty, populated, evidence, selection and responsive screenshots (3.6s)
+
+  9 passed (27.1s)
+
+COMMAND: npm.cmd run test:browser -- --config node_modules/.cache/weave-audit/playwright.config.mjs live.spec.ts
+LIVE_BROWSER: True
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test --config node_modules/.cache/weave-audit/playwright.config.mjs live.spec.ts
+
+[WebServer] INFO:     Started server process [27600]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8011 (Press CTRL+C to quit)
+[WebServer] (node:2816) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:29004) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\live.spec.ts:3:1 › real seeded FalkorDB: grounded answers, inspection, expansion and report routes (3.1s)
+
+  1 passed (6.6s)
+
+
+COMMAND: docker build -t weave-api:audit backend
+EXIT: 0
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 390B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 ...
+
+#3 [auth] library/python:pull token for registry-1.docker.io
+#3 DONE 0.0s
+
+#4 [internal] load metadata for ghcr.io/astral-sh/uv:0.13.1
+#4 DONE 2.2s
+
+#2 [internal] load metadata for docker.io/library/python:3.12-slim
+#2 DONE 2.5s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 107B done
+#5 DONE 0.0s
+
+#6 [stage-0 1/7] FROM docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
+#6 resolve docker.io/library/python:3.12-slim@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1 0.0s done
+#6 DONE 0.0s
+
+#7 FROM ghcr.io/astral-sh/uv:0.13.1@sha256:4a1f3666816dafadd20ceb71eac9a7d56d7ef30279f7d64048519ab901ada336
+#7 resolve ghcr.io/astral-sh/uv:0.13.1@sha256:4a1f3666816dafadd20ceb71eac9a7d56d7ef30279f7d64048519ab901ada336 0.0s done
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 5.46kB 0.0s done
+#8 DONE 0.0s
+
+#9 [stage-0 2/7] COPY --from=ghcr.io/astral-sh/uv:0.13.1 /uv /uvx /bin/
+#9 CACHED
+
+#10 [stage-0 3/7] WORKDIR /app
+#10 CACHED
+
+#11 [stage-0 5/7] COPY src ./src
+#11 CACHED
+
+#12 [stage-0 4/7] COPY pyproject.toml uv.lock README.md ./
+#12 CACHED
+
+#13 [stage-0 6/7] RUN uv sync --frozen --no-dev
+#13 CACHED
+
+#14 [stage-0 7/7] RUN useradd --create-home appuser
+#14 CACHED
+
+#15 exporting to image
+#15 exporting layers done
+#15 exporting manifest sha256:2057194abcc765da2bcef43bfd91638b302a14a31d55ddeae1d282114d3185b2 done
+#15 exporting config sha256:cd6f92423a97b2416000ed8f25ecc77772677f5398f46b9a460430e3a7ac53ef done
+#15 exporting attestation manifest sha256:74c84b85c8e2184d650a5c4caa4b733e1220a7e6f0653404c70057eadc772c60 0.0s done
+#15 exporting manifest list sha256:62f752f5353a61b55af475c33fc45f38bc42b6a445f1df7b76aa5d2f7f3d15b7 done
+#15 naming to docker.io/library/weave-api:audit done
+#15 unpacking to docker.io/library/weave-api:audit 0.0s done
+#15 DONE 0.1s
+
+CONTAINER RUNTIME: PASS real readiness/chat, explicit port 8127, non-root image. No external deployment.
+
+ADDITIONAL INDEPENDENT AUDIT PROBES
+node backend/dist/audit/frontend_probes.cjs -> exit 0
+{
+  "beforeEvidenceFocus": "decision_rationale",
+  "afterEvidenceFocus": "",
+  "freshnessWithoutTimestamp": "unknown",
+  "freshnessWithRecentTimestamp": "aging",
+  "pageErrors": []
+}
+Freshness observations above are NOT a confirmed defect: B defines is_stale for both aging/stale and absent timestamps intentionally remain unknown.
+node backend/dist/audit/contrast_probe.cjs -> exit 0 (measurements reveal contrast failures, not a passing AA check)
+{
+  "light": [
+    {
+      "id": "service:user-profile-api",
+      "role": "SMALL",
+      "opacity": 0.7,
+      "ratio": 3.32
+    },
+    {
+      "id": "service:user-profile-api",
+      "role": "SPAN",
+      "opacity": 0.7,
+      "ratio": 3.08
+    },
+    {
+      "id": "service:notification-service",
+      "role": "SMALL",
+      "opacity": 0.7,
+      "ratio": 3.32
+    },
+    {
+      "id": "service:notification-service",
+      "role": "SPAN",
+      "opacity": 0.7,
+      "ratio": 3.08
+    }
+  ],
+  "dark": [
+    {
+      "id": "service:user-profile-api",
+      "role": "SMALL",
+      "opacity": 0.7,
+      "ratio": 4.45
+    },
+    {
+      "id": "service:notification-service",
+      "role": "SMALL",
+      "opacity": 0.7,
+      "ratio": 4.45
+    }
+  ]
+}
+node backend/dist/audit/graph_fit_probe.cjs -> exit 0; settled default/manual-fit clipped nodes: [] / [].
+node backend/dist/audit/nullability_probe.cjs -> exit 0; mocked optional/null fields and live unsupported/no-result response pass; page errors [].
+Audit log collection corrected for PowerShell UTF-16 redirection; probe results unchanged.
+{
+  "workingTextFilesScanned": 199,
+  "reachableCommitsScanned": 23,
+  "uniqueBlobsInspected": 109,
+  "credentialPatternFindings": []
+}
+C API/service raw-query execution calls: []
+UPSTREAM COMPARISON backend/src/weave_brain/agent/orchestrator.py same= False
+local exports: ['followups', 'aggregate', 'process_question']
+origin/main exports: ['classify_question_deterministic', 'classify_question', 'process_question']
+UPSTREAM COMPARISON backend/src/weave_brain/api/routes/reports.py same= False
+UPSTREAM COMPARISON backend/src/weave_brain/services/report_service.py same= False
+UPSTREAM COMPARISON frontend/src/types/api.ts same= False
+UPSTREAM COMPARISON backend/src/weave_brain/domain/models.py same= False
+
+Documented-module runtime/production-preview checks completed all assertions; native stderr is the existing upstream warning.
+python.exe : D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using 
+`httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+At line:69 char:1
++ & .\backend\.venv\Scripts\python.exe backend/dist/audit/runtime.py *> ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (D:\WEAVE\backen...ttpx2` instead.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  from starlette.testclient import TestClient as TestClient  # noqa
+Provider model/key configured: False
+PASS documented module startup; process HOST/PORT 8022; live DB readiness
+PASS LIVE QUESTION service_overview nodes 9 evidence 6
+PASS LIVE QUESTION decision_rationale nodes 5 evidence 3
+PASS LIVE QUESTION blast_radius nodes 3 evidence 2
+PASS LIVE QUESTION expert_finder nodes 16 evidence 2
+PASS LIVE QUESTION change_impact nodes 16 evidence 7
+PASS LIVE QUESTION knowledge_health nodes 4 evidence 0
+PASS LIVE QUESTION onboarding nodes 16 evidence 2
+PASS LIVE QUESTION find_connection nodes 3 evidence 2
+PASS LIVE TYPED ROUTE /api/services/service:authentication-api
+PASS LIVE TYPED ROUTE /api/services/service:authentication-api/blast-radius
+PASS LIVE TYPED ROUTE /api/graph/neighborhood/repository%3Aacme%2Fauth-api?depth=1
+PASS LIVE TYPED ROUTE /api/entities/repository:acme/auth-api
+PASS LIVE TYPED ROUTE /api/graph/shortest-path?from_id=person:priya-sharma&to_id=service:authentication-api
+PASS LIVE TYPED ROUTE /api/reports/health-score
+PASS LIVE TYPED ROUTE /api/reports/onboarding/service:authentication-api
+PASS live validation, unknown/slash IDs, traversal bounds, empty search and CORS
+PASS actual closed-port dependency 503/recovery, explicit fixture readiness/labels, missing-provider 503 without fallback
+PRODUCTION PREVIEW direct reload PASS /health
+PRODUCTION PREVIEW direct reload PASS /onboarding?service_id=service:authentication-api
+PRODUCTION PREVIEW actual chat PASS, API URL compiled for port 8022
+Browser page errors: [] failed network: []
+
+
+Isolated __main__.py binding-stub probe: dotenv HOST=127.0.0.1/PORT=8123 selected 0.0.0.0/8000. No repository env files modified. Process HOST/PORT pass separately.
+npm ls dialkit motion --depth=0 -> 2.0.2 / 14.3.0. No DialKit imports in src. Fresh provider configuration booleans: model=false, key=false.

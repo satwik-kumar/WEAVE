@@ -68,7 +68,7 @@ def test_mapper_staleness_and_freshness():
     # Missing
     stale, status = _calculate_freshness({}, now=now)
     assert not stale
-    assert status == "fresh"
+    assert status == "unknown"
 
 
 def test_mapper_superseded_decision():

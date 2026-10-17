@@ -245,7 +245,7 @@ def get_neighborhood(node_id: str, depth: int = 2, graph: Any = None) -> dict[st
     """Returns bounded graph neighborhood centered on node_id with highlighted center."""
 
 def find_shortest_path(from_id: str, to_id: str, graph: Any = None) -> dict[str, Any]:
-    """Finds shortest path up to 5 hops. Returns {path_found: bool, nodes: [], edges: [], highlighted_path_ids: []}."""
+    """Finds shortest path up to 3 hops. Returns {path_found: bool, nodes: [], edges: [], highlighted_path_ids: []}."""
 
 def get_service_dependents(service_id: str, graph: Any = None) -> list[dict[str, Any]]:
     """Returns direct dependents: (dep:Service)-[:DEPENDS_ON]->(s:Service)."""
@@ -441,4 +441,45 @@ volumes:
    ```powershell
    uv run ruff check .
    ```
-EOF
+## 10. Dev C implementation notes (historical; superseded by §11)
+
+This implementation uses `/api`, superseding the guide's historical `/api/v1` examples.
+The following additions clarify C's HTTP boundary; the shared domain JSON remains unchanged:
+
+- `GET /api/live`: process liveness (200), independent of graph availability.
+- `GET /api/health`: readiness (200 for a successful real retrieval, 503 for unavailable DB or explicit fixture mode).
+- `GET /api/entities/{node_id:path}`: `GraphNode` or 404, using B's public neighborhood lookup. Slash-containing canonical IDs work encoded or unencoded.
+- Invalid chat/query fields return 400. Dependency failures return safe 503; unexpected application failures return safe 500. No internal exception text is returned.
+- Chat accepts 1–4000 non-whitespace question characters; optional conversation IDs must be nonblank and at most 200 characters. Conversation memory is not implemented.
+- Neighborhood and blast-radius traversal accept only depths 1–3; output graphs have at most 100 nodes. Missing edge endpoints are omitted with a visible warning.
+- C's shortest-path route uses B's three-hop neighborhood and bounded breadth-first search. B's existing five-hop `find_shortest_path` conflicts with AGENTS.md, so C does not invoke it. A path-not-found response describes the bounded returned neighborhood, not a proof of global disconnection. Original relationship directions are preserved.
+- Fixtures require `DEVELOPMENT_FIXTURES=true`; fixture data never substitutes for a failed production retrieval. Fixture readiness stays 503. Chat currently provides explicitly identified deterministic authentication overview, decisions, experts and blast-radius retrieval. D's orchestrator remains an integration dependency.
+- `GraphView.warning`, evidence URLs/excerpts, `ChatResponse.graph`/`intent`, onboarding graph and conversation ID may serialize as JSON null; shared TypeScript types accept those values.
+- D owns health-score/reports and their UI. They are not registered until D provides actual interfaces; C does not create competing report endpoints or broken page links.
+
+The historical audit is source inspection, not current runtime verification. See [Dev C audit](dev-c/audit.md) for actual checks and remaining owner dependencies.
+
+## 11. Full-scope implementation (2026-10-17)
+
+The user expanded the assignment to the full execution guide and supplied team authorization. The earlier missing-interface/dependency notes above are historical. Current code includes ingestion/seed, agent orchestration, reports and the health/onboarding/timeline/followup UI.
+
+### Runtime interfaces
+
+- `agent.orchestrator.process_question(ChatRequest, service=None, provider=None) -> ChatResponse` is the actual sync orchestrator. It is called through `services/chat_service.py` when `CHAT_MODE=agent`. Default `CHAT_MODE=retrieval` uses the same approved graph tools and clearly discloses deterministic answers.
+- Agent providers support OpenAI Responses, Gemini Interactions and Anthropic Messages through typed adapters. Keys/model names are backend-only settings; neither missing credentials nor provider/retrieval failures fall back to fixtures or another answer mode. Maximum six tool calls, five model turns, a 25-second checked model-loop budget and bounded output/context apply. A slow synchronous graph operation can finish after the checked loop budget; the graph client has separate finite connection/read timeouts.
+- Tools are a fixed registry: service overview, blast radius, expertise, decisions, connection, search and change impact. Arguments reject extra fields and invalid canonical IDs. No model-generated Cypher or arbitrary tool execution exists. Responses validate source citation indices and references to retrieved canonical IDs; semantic grounding still requires evaluation.
+- The graph client accepts optional keyword `username`, `password`, `ssl`, and `timeout`; TLS verifies certificates and hostnames. B's public shortest-path query now uses at most three hops. Query retrieval checks one extra row, returns at most 50 and propagates graph truncation/warnings. C still uses bounded neighborhood/BFS for its shortest-path HTTP route.
+- Overview retains its legacy dependent-ID list at B's raw interface, with actual dependent nodes/edges now included in its graph. The C HTTP DTO returns typed `GraphNode` dependent records. Decisions return the service endpoint. Evidence preserves external source IDs/types while relationship paths use canonical IDs.
+
+### Reports (registered once)
+
+| GET route | Response |
+| --- | --- |
+| `/api/health-score` and `/api/reports/health-score` | `HealthReport`: health_score, four metrics, counts, gaps, optional graph, warnings |
+| `/api/reports/knowledge-gaps` | `KnowledgeGaps`: unowned_services, decisions_missing_rationale, undocumented_services, total_gaps, truncated, warning |
+| `/api/reports/onboarding/{service_id}` or `/api/reports/onboarding?service_id=...` | `OnboardingBrief` |
+| `/api/services/{service_id}/decisions` | nodes (newest first), evidence, graph |
+
+Gap details are bounded; a truncation warning means the displayed gap count may be incomplete. Onboarding returns accepted non-superseded decisions, retrieved experts, dependent-service risks, directly linked open incidents and tickets. No absent tests/code/impact facts are invented. Reports use live named queries unless explicit fixture mode is enabled.
+
+`/health` and `/onboarding` are real frontend routes with direct reload support. SuggestedFollowups uses the shared submit action; DecisionTimeline mounts for selected services and onboarding. Active-page context and graph versions prevent late answers/expansions from replacing another page's graph. Connection interactions call the existing shortest-path API. Current verification is recorded in [full-scope audit](full-scope-audit.md).

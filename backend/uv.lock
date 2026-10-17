@@ -40,6 +40,7 @@ source = { editable = "." }
 dependencies = [
     { name = "falkordb" },
     { name = "fastapi" },
+    { name = "httpx" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
@@ -57,6 +58,7 @@ dev = [
 requires-dist = [
     { name = "falkordb", specifier = ">=1.8.0" },
     { name = "fastapi", specifier = ">=0.143.3" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "pydantic", specifier = ">=2.14.1" },
     { name = "pydantic-settings", specifier = ">=2.16.0" },
     { name = "python-dotenv", specifier = ">=1.2.4" },

@@ -1,122 +1,93 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { lazy, Suspense, useEffect } from "react";
+import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
+import { AskBrainPage } from "./pages/AskBrainPage";
+import "./App.css";
+import { Icon } from "./components/Icon";
+import { ThemeControl } from "./components/ThemeControl";
 
-function App() {
-  const [count, setCount] = useState(0)
+const HealthPage = lazy(() =>
+  import("./pages/HealthPage").then((module) => ({
+    default: module.HealthPage,
+  })),
+);
+const OnboardingPage = lazy(() =>
+  import("./pages/OnboardingPage").then((module) => ({
+    default: module.OnboardingPage,
+  })),
+);
 
+export default function App() {
+  useEffect(() => {
+    const pointer = () => {
+      document.documentElement.dataset.input = "pointer";
+    };
+    const keyboard = () => {
+      document.documentElement.dataset.input = "keyboard";
+    };
+    window.addEventListener("pointerdown", pointer, true);
+    window.addEventListener("keydown", keyboard, true);
+    return () => {
+      window.removeEventListener("pointerdown", pointer, true);
+      window.removeEventListener("keydown", keyboard, true);
+    };
+  }, []);
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+    <BrowserRouter>
+      <aside className="app-sidebar">
+        <NavLink className="brand-symbol" to="/" aria-label="WEAVE home">
+          <Icon name="brain" size={25} />
+        </NavLink>
+        <nav aria-label="Workspace">
+          <NavLink to="/" aria-label="Ask Brain" title="Ask Brain">
+            <Icon name="chat" />
+            <span className="nav-tooltip">Ask Brain</span>
+          </NavLink>
+          <NavLink
+            to="/health"
+            aria-label="Knowledge Health"
+            title="Knowledge Health"
+          >
+            <Icon name="health" />
+            <span className="nav-tooltip">Knowledge Health</span>
+          </NavLink>
+          <NavLink to="/onboarding" aria-label="Onboarding" title="Onboarding">
+            <Icon name="book" />
+            <span className="nav-tooltip">Onboarding</span>
+          </NavLink>
+        </nav>
+        <span className="sidebar-footer" title="Engineering workspace">
+          <Icon name="graph" />
+        </span>
+      </aside>
+      <div className="app-content">
+        <header className="app-header">
+          <NavLink className="brand" to="/">
+            WEAVE
+          </NavLink>
+          <span className="header-divider" />
+          <span className="workspace-name">Engineering workspace</span>
+          <span className="header-note">
+            <Icon name="graph" size={14} /> Connected knowledge
+          </span>
+          <ThemeControl />
+        </header>
+        <Suspense fallback={<p role="status">Loading page?</p>}>
+          <Routes>
+            <Route path="/" element={<AskBrainPage />} />
+            <Route path="/health" element={<HealthPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route
+              path="*"
+              element={
+                <main className="not-found">
+                  <h1>Page unavailable</h1>
+                  <a href="/">Return to Ask Brain</a>
+                </main>
+              }
+            />
+          </Routes>
+        </Suspense>
+      </div>
+    </BrowserRouter>
+  );
 }
-
-export default App

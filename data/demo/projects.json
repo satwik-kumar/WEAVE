@@ -1,0 +1,16 @@
+[
+  {
+    "source_id": "proj-auth-modernization",
+    "source_type": "jira",
+    "entity_type": "project",
+    "canonical_id": "project:auth-modernization",
+    "title": "Auth Modernization",
+    "properties": {
+      "description": "OAuth2 and JWT token architecture modernization initiative",
+      "status": "active"
+    },
+    "relationships": [
+      ["USES", "service:authentication-api", {"since": "2025-10-01"}]
+    ]
+  }
+]

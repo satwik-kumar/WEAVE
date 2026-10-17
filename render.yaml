@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: weave-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: DEVELOPMENT_FIXTURES
+        value: "false"
+      - key: CHAT_MODE
+        value: retrieval
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: FALKORDB_HOST
+        sync: false
+      - key: FALKORDB_PORT
+        sync: false
+      - key: FALKORDB_GRAPH_NAME
+        sync: false
+      - key: FALKORDB_SSL
+        value: "true"
+      - key: FALKORDB_USERNAME
+        sync: false
+      - key: FALKORDB_PASSWORD
+        sync: false

@@ -6,6 +6,7 @@ import contextlib
 import os
 from collections.abc import Generator
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from redis.exceptions import ResponseError
@@ -20,7 +21,9 @@ from weave_brain.graph.schema import (
 
 
 @pytest.fixture
-def isolated_schema_graph(monkeypatch: pytest.MonkeyPatch) -> Generator[Any, None, None]:
+def isolated_schema_graph(
+    monkeypatch: pytest.MonkeyPatch,
+) -> Generator[Any, None, None]:
     """Provide an isolated temporary FalkorDB graph for schema initialization testing."""
     if not os.getenv("FALKORDB_AVAILABLE"):
         pytest.skip("FalkorDB integration test requires FALKORDB_AVAILABLE=1")
@@ -30,7 +33,7 @@ def isolated_schema_graph(monkeypatch: pytest.MonkeyPatch) -> Generator[Any, Non
     if not os.getenv("FALKORDB_PORT"):
         monkeypatch.setenv("FALKORDB_PORT", "6379")
 
-    test_graph_name = "test_schema_init_graph"
+    test_graph_name = f"weave_test_schema_{uuid4().hex}"
     monkeypatch.setenv("FALKORDB_GRAPH_NAME", test_graph_name)
 
     graph = get_graph()

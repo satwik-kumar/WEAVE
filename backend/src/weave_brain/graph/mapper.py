@@ -13,19 +13,21 @@ from weave_brain.domain.models import (
     GraphView,
 )
 
-VALID_ENTITY_TYPES: frozenset[str] = frozenset({
-    "person",
-    "team",
-    "service",
-    "repository",
-    "file",
-    "document",
-    "decision",
-    "ticket",
-    "incident",
-    "test",
-    "project",
-})
+VALID_ENTITY_TYPES: frozenset[str] = frozenset(
+    {
+        "person",
+        "team",
+        "service",
+        "repository",
+        "file",
+        "document",
+        "decision",
+        "ticket",
+        "incident",
+        "test",
+        "project",
+    }
+)
 
 
 def _parse_datetime(val: Any) -> datetime | None:
@@ -57,11 +59,9 @@ def _calculate_freshness(
       30 - 90 days: 'aging' (is_stale=True)
       > 90 days: 'stale' (is_stale=True)
     """
-    ref_dt = _parse_datetime(
-        props.get("ingested_at") or props.get("source_updated_at")
-    )
+    ref_dt = _parse_datetime(props.get("ingested_at") or props.get("source_updated_at"))
     if ref_dt is None:
-        return (False, "fresh")
+        return (False, "unknown")
 
     current_time = now or datetime.now(UTC)
     age_days = (current_time - ref_dt).days
@@ -140,18 +140,13 @@ def to_graph_view(
             src_id = str(e.get("source_id", "")).strip()
             tgt_id = str(e.get("target_id", "")).strip()
             rel_type = str(
-                e.get("relationship_type")
-                or e.get("label")
-                or e.get("relation")
-                or ""
+                e.get("relationship_type") or e.get("label") or e.get("relation") or ""
             ).strip()
             if not (src_id and tgt_id and rel_type):
                 continue
 
             edge_id = (
-                str(e.get("id"))
-                if e.get("id")
-                else f"{src_id}::{rel_type}::{tgt_id}"
+                str(e.get("id")) if e.get("id") else f"{src_id}::{rel_type}::{tgt_id}"
             )
             props = dict(e.get("properties", {}))
 
@@ -193,6 +188,10 @@ def to_graph_view(
             props = dict(n.get("properties", {}))
             # Also inherit top-level keys if not in properties
             for prop_key in (
+                "source_id",
+                "source_type",
+                "source_url",
+                "content_hash",
                 "description",
                 "status",
                 "rationale",
@@ -219,8 +218,7 @@ def to_graph_view(
 
         # Superseded decision status
         if entity_type == "decision" and (
-            node_id in superseded_decision_ids
-            or props.get("status") == "superseded"
+            node_id in superseded_decision_ids or props.get("status") == "superseded"
         ):
             props["status"] = "superseded"
 
@@ -319,18 +317,14 @@ def to_evidence_items(query_result: dict[str, Any]) -> list[EvidenceItem]:
             elif isinstance(item, dict):
                 evidence_items.append(
                     EvidenceItem(
-                        source_id=str(
-                            item.get("source_id") or item.get("id") or ""
-                        ),
+                        source_id=str(item.get("source_id") or item.get("id") or ""),
                         title=str(item.get("title") or item.get("source_id") or ""),
                         source_type=str(
                             item.get("source_type") or item.get("type") or "entity"
                         ),
                         excerpt=item.get("excerpt"),
                         source_url=item.get("source_url"),
-                        relationship_path=list(
-                            item.get("relationship_path", [])
-                        ),
+                        relationship_path=list(item.get("relationship_path", [])),
                     )
                 )
         return evidence_items
@@ -344,14 +338,12 @@ def to_evidence_items(query_result: dict[str, Any]) -> list[EvidenceItem]:
             excerpt = props.get("rationale") or props.get("status")
             evidence_items.append(
                 EvidenceItem(
-                    source_id=dec.get("id", ""),
+                    source_id=props.get("source_id") or dec.get("id", ""),
                     title=dec.get("title", dec.get("id", "")),
-                    source_type="decision",
+                    source_type=props.get("source_type") or "decision",
                     excerpt=excerpt,
                     source_url=props.get("source_url"),
-                    relationship_path=[
-                        p for p in [dec.get("id"), target_id] if p
-                    ],
+                    relationship_path=[p for p in [dec.get("id"), target_id] if p],
                 )
             )
 
@@ -361,14 +353,12 @@ def to_evidence_items(query_result: dict[str, Any]) -> list[EvidenceItem]:
             excerpt = props.get("content_excerpt") or props.get("summary")
             evidence_items.append(
                 EvidenceItem(
-                    source_id=doc.get("id", ""),
+                    source_id=props.get("source_id") or doc.get("id", ""),
                     title=doc.get("title", doc.get("id", "")),
-                    source_type="document",
+                    source_type=props.get("source_type") or "document",
                     excerpt=excerpt,
                     source_url=props.get("source_url"),
-                    relationship_path=[
-                        p for p in [doc.get("id"), target_id] if p
-                    ],
+                    relationship_path=[p for p in [doc.get("id"), target_id] if p],
                 )
             )
 
@@ -377,9 +367,10 @@ def to_evidence_items(query_result: dict[str, Any]) -> list[EvidenceItem]:
             dep_id = dep.get("id", "")
             evidence_items.append(
                 EvidenceItem(
-                    source_id=dep_id,
+                    source_id=dep.get("properties", {}).get("source_id") or dep_id,
                     title=dep.get("title", dep_id),
-                    source_type="service",
+                    source_type=dep.get("properties", {}).get("source_type")
+                    or "service",
                     excerpt=f"{dep_id} depends on {target_id} and will fail if it goes down",
                     source_url=None,
                     relationship_path=[p for p in [dep_id, target_id] if p],

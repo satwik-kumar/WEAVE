@@ -1,0 +1,681 @@
+Dev C local verification — 2026-10-17
+Commands executed in order; failures retained. Browser API uses explicit fixtures.
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe sync --frozen
+EXIT: 0
+Checked 35 packages in 281ms
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff check
+EXIT: 1
+I001 [*] Import block is un-sorted or un-formatted
+ --> src\weave_brain\domain\models.py:1:1
+  |
+1 | / from __future__ import annotations
+2 | | from pydantic import BaseModel
+3 | | from typing import Optional, Literal, Any, Union
+4 | | from datetime import datetime
+5 | | import uuid
+  | |___________^
+6 |
+7 |   EntityType = Literal[
+  |
+help: Organize imports
+  |
+1 | from __future__ import annotations
+2 +
+3 + import uuid
+4 + from datetime import datetime
+5 + from typing import Any, Literal, Optional, Union
+6 +
+7 | from pydantic import BaseModel
+  - from typing import Optional, Literal, Any, Union
+  - from datetime import datetime
+  - import uuid
+8 |
+  |
+
+UP045 [*] Use `X | None` for type annotations
+  --> src\weave_brain\domain\models.py:47:14
+   |
+45 |     highlighted_path_ids: list[str] = []
+46 |     truncated: bool = False
+47 |     warning: Optional[str] = None
+   |              ^^^^^^^^^^^^^
+help: Convert to `X | None`
+   |
+46 |     truncated: bool = False
+   -     warning: Optional[str] = None
+47 +     warning: str | None = None
+48 |
+   |
+
+UP045 [*] Use `X | None` for type annotations
+  --> src\weave_brain\domain\models.py:55:14
+   |
+53 |     title: str
+54 |     source_type: str
+55 |     excerpt: Optional[str] = None
+   |              ^^^^^^^^^^^^^
+56 |     source_url: Optional[str] = None
+57 |     relationship_path: list[str] = []  # list of node IDs
+   |
+help: Convert to `X | None`
+   |
+54 |     source_type: str
+   -     excerpt: Optional[str] = None
+55 +     excerpt: str | None = None
+56 |     source_url: Optional[str] = None
+   |
+
+UP045 [*] Use `X | None` for type annotations
+  --> src\weave_brain\domain\models.py:56:17
+   |
+54 |     source_type: str
+55 |     excerpt: Optional[str] = None
+56 |     source_url: Optional[str] = None
+   |                 ^^^^^^^^^^^^^
+57 |     relationship_path: list[str] = []  # list of node IDs
+   |
+help: Convert to `X | None`
+   |
+55 |     excerpt: Optional[str] = None
+   -     source_url: Optional[str] = None
+56 +     source_url: str | None = None
+57 |     relationship_path: list[str] = []  # list of node IDs
+   |
+
+UP045 [*] Use `X | None` for type annotations
+  --> src\weave_brain\domain\models.py:63:22
+   |
+61 | class ChatRequest(BaseModel):
+62 |     question: str
+63 |     conversation_id: Optional[str] = None
+   |                      ^^^^^^^^^^^^^
+help: Convert to `X | None`
+   |
+62 |     question: str
+   -     conversation_id: Optional[str] = None
+63 +     conversation_id: str | None = None
+64 |
+   |
+
+UP045 [*] Use `X | None` for type annotations
+  --> src\weave_brain\domain\models.py:70:12
+   |
+68 |     answer: str
+69 |     evidence: list[EvidenceItem] = []
+70 |     graph: Optional[GraphView] = None
+   |            ^^^^^^^^^^^^^^^^^^^
+71 |     highlighted_paths: list[list[str]] = []
+72 |     related_entities: list[GraphNode] = []
+   |
+help: Convert to `X | None`
+   |
+69 |     evidence: list[EvidenceItem] = []
+   -     graph: Optional[GraphView] = None
+70 +     graph: GraphView | None = None
+71 |     highlighted_paths: list[list[str]] = []
+   |
+
+UP045 [*] Use `X | None` for type annotations
+  --> src\weave_brain\domain\models.py:75:13
+   |
+73 |     suggested_followups: list[str] = []  # Added in Section 21 (Page 65) for Dev D
+74 |     warnings: list[str] = []
+75 |     intent: Optional[str] = None
+   |             ^^^^^^^^^^^^^
+76 |
+77 |     def __init__(self, **data: Any):
+   |
+help: Convert to `X | None`
+   |
+74 |     warnings: list[str] = []
+   -     intent: Optional[str] = None
+75 +     intent: str | None = None
+76 |
+   |
+
+UP007 Use `X | Y` for type annotations
+  --> src\weave_brain\domain\models.py:85:20
+   |
+83 | # Ingestion
+84 | # Supports (rel_type, target_canonical_id) or (rel_type, target_canonical_id, edge_props)
+85 | RelationshipEdge = Union[tuple[str, str], tuple[str, str, dict[str, Any]]]
+   |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: Convert to `X | Y`
+
+UP045 [*] Use `X | None` for type annotations
+   --> src\weave_brain\domain\models.py:98:17
+    |
+ 96 |         []
+ 97 |     )  # (rel_type, target_canonical_id[, props])
+ 98 |     source_url: Optional[str] = None
+    |                 ^^^^^^^^^^^^^
+ 99 |     content_hash: Optional[str] = None
+100 |     source_updated_at: Optional[datetime] = None
+    |
+help: Convert to `X | None`
+   |
+97 |     )  # (rel_type, target_canonical_id[, props])
+   -     source_url: Optional[str] = None
+98 +     source_url: str | None = None
+99 |     content_hash: Optional[str] = None
+   |
+
+UP045 [*] Use `X | None` for type annotations
+   --> src\weave_brain\domain\models.py:99:19
+    |
+ 97 |     )  # (rel_type, target_canonical_id[, props])
+ 98 |     source_url: Optional[str] = None
+ 99 |     content_hash: Optional[str] = None
+    |                   ^^^^^^^^^^^^^
+100 |     source_updated_at: Optional[datetime] = None
+101 |     ingested_at: datetime = datetime.utcnow()
+    |
+help: Convert to `X | None`
+    |
+98  |     source_url: Optional[str] = None
+    -     content_hash: Optional[str] = None
+99  +     content_hash: str | None = None
+100 |     source_updated_at: Optional[datetime] = None
+    |
+
+UP045 [*] Use `X | None` for type annotations
+   --> src\weave_brain\domain\models.py:100:24
+    |
+ 98 |     source_url: Optional[str] = None
+ 99 |     content_hash: Optional[str] = None
+100 |     source_updated_at: Optional[datetime] = None
+    |                        ^^^^^^^^^^^^^^^^^^
+101 |     ingested_at: datetime = datetime.utcnow()
+    |
+help: Convert to `X | None`
+    |
+99  |     content_hash: Optional[str] = None
+    -     source_updated_at: Optional[datetime] = None
+100 +     source_updated_at: datetime | None = None
+101 |     ingested_at: datetime = datetime.utcnow()
+    |
+
+DTZ003 `datetime.datetime.utcnow()` used
+   --> src\weave_brain\domain\models.py:101:29
+    |
+ 99 |     content_hash: Optional[str] = None
+100 |     source_updated_at: Optional[datetime] = None
+101 |     ingested_at: datetime = datetime.utcnow()
+    |                             ^^^^^^^^^^^^^^^^^
+help: Use `datetime.datetime.now(tz=...)` instead
+
+UP045 [*] Use `X | None` for type annotations
+   --> src\weave_brain\domain\models.py:124:12
+    |
+122 |     open_incidents: list[GraphNode] = []
+123 |     related_tickets: list[GraphNode] = []
+124 |     graph: Optional[GraphView] = None
+    |            ^^^^^^^^^^^^^^^^^^^
+125 |     warnings: list[str] = []
+    |
+help: Convert to `X | None`
+    |
+123 |     related_tickets: list[GraphNode] = []
+    -     graph: Optional[GraphView] = None
+124 +     graph: GraphView | None = None
+125 |     warnings: list[str] = []
+    |
+
+Found 13 errors.
+[*] 11 fixable with `--fix`.
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff format --check . --output-format concise
+EXIT: 1
+src\weave_brain\domain\models.py:95:25: unformatted: File would be reformatted
+src\weave_brain\graph\fixtures.py:12:31: unformatted: File would be reformatted
+src\weave_brain\graph\mapper.py:16:48: unformatted: File would be reformatted
+src\weave_brain\graph\queries.py:21:21: unformatted: File would be reformatted
+src\weave_brain\graph\writer.py:20:55: unformatted: File would be reformatted
+tests\integration\test_queries.py:61:25: unformatted: File would be reformatted
+tests\integration\test_schema.py:23:27: unformatted: File would be reformatted
+tests\integration\test_smoke.py:22:52: unformatted: File would be reformatted
+tests\integration\test_writer.py:266:31: unformatted: File would be reformatted
+tests\unit\test_graph_schema.py:36:15: unformatted: File would be reformatted
+tests\unit\test_graph_writer.py:56:40: unformatted: File would be reformatted
+11 files would be reformatted, 18 files already formatted
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff check src/weave_brain/api src/weave_brain/core src/weave_brain/services tests/unit/test_api.py
+EXIT: 0
+All checks passed!
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff format --check src/weave_brain/api src/weave_brain/core src/weave_brain/services tests/unit/test_api.py
+EXIT: 0
+10 files already formatted
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run pytest tests/unit/ -v
+EXIT: 0
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.7.0 -- D:\WEAVE\backend\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\WEAVE\backend
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 67 items
+
+tests/unit/test_api.py::test_chat_invalid[body0] PASSED                  [  1%]
+tests/unit/test_api.py::test_chat_invalid[body1] PASSED                  [  2%]
+tests/unit/test_api.py::test_chat_invalid[body2] PASSED                  [  4%]
+tests/unit/test_api.py::test_chat_invalid[body3] PASSED                  [  5%]
+tests/unit/test_api.py::test_chat_invalid[body4] PASSED                  [  7%]
+tests/unit/test_api.py::test_chat_contract[Who owns authentication?-service_overview] PASSED [  8%]
+tests/unit/test_api.py::test_chat_contract[What breaks if authentication goes down?-blast_radius] PASSED [ 10%]
+tests/unit/test_api.py::test_chat_contract[Tell me about sales-unsupported] PASSED [ 11%]
+tests/unit/test_api.py::test_chat_contract[Change impact of authentication-unsupported] PASSED [ 13%]
+tests/unit/test_api.py::test_chat_contract[Why do authentication tokens expire?-decision_rationale] PASSED [ 14%]
+tests/unit/test_api.py::test_chat_contract[Who are authentication experts?-expert_finder] PASSED [ 16%]
+tests/unit/test_api.py::test_overview_direction_and_nullability PASSED   [ 17%]
+tests/unit/test_api.py::test_blast_direction PASSED                      [ 19%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=0] PASSED [ 20%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=4] PASSED [ 22%]
+tests/unit/test_api.py::test_query_validation[/api/services/service:authentication-api/blast-radius?max_depth=4] PASSED [ 23%]
+tests/unit/test_api.py::test_query_validation[/api/search?q=%20] PASSED  [ 25%]
+tests/unit/test_api.py::test_query_validation[/api/search] PASSED        [ 26%]
+tests/unit/test_api.py::test_query_validation[/api/entities/not-an-id] PASSED [ 28%]
+tests/unit/test_api.py::test_query_validation[/api/graph/shortest-path?from_id=bad&to_id=bad] PASSED [ 29%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/entities/service:unknown] PASSED [ 31%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/services/service:unknown] PASSED [ 32%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/graph/neighborhood/service:unknown] PASSED [ 34%]
+tests/unit/test_api.py::test_slash_ids[repository:acme/auth-api] PASSED  [ 35%]
+tests/unit/test_api.py::test_slash_ids[repository%3Aacme%2Fauth-api] PASSED [ 37%]
+tests/unit/test_api.py::test_shortest_preserves_direction PASSED         [ 38%]
+tests/unit/test_api.py::test_database_error_and_recovery PASSED          [ 40%]
+tests/unit/test_api.py::test_fixture_mode_not_ready PASSED               [ 41%]
+tests/unit/test_api.py::test_no_production_fixture_fallback PASSED       [ 43%]
+tests/unit/test_api.py::test_graph_bounds_and_dangling_edges PASSED      [ 44%]
+tests/unit/test_api.py::test_cors_parsing[["https://example.com", "http://localhost:5173"]] PASSED [ 46%]
+tests/unit/test_api.py::test_cors_parsing[https://example.com, http://localhost:5173] PASSED [ 47%]
+tests/unit/test_api.py::test_graph_log_redaction PASSED                  [ 49%]
+tests/unit/test_api.py::test_unexpected_errors_are_safe_and_cors_readable PASSED [ 50%]
+tests/unit/test_api.py::test_env_file_and_process_precedence PASSED      [ 52%]
+tests/unit/test_api.py::test_invalid_origins_rejected[*] PASSED          [ 53%]
+tests/unit/test_api.py::test_invalid_origins_rejected[[]] PASSED         [ 55%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://user:password@example.com] PASSED [ 56%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://example.com/path] PASSED [ 58%]
+tests/unit/test_api.py::test_shortest_path_never_exceeds_three_hops PASSED [ 59%]
+tests/unit/test_graph_schema.py::test_entity_type_mapping_completeness PASSED [ 61%]
+tests/unit/test_graph_schema.py::test_get_label_for_unknown_type PASSED  [ 62%]
+tests/unit/test_graph_schema.py::test_whitelisted_labels PASSED          [ 64%]
+tests/unit/test_graph_schema.py::test_init_schema_creates_indexes_on_empty_graph PASSED [ 65%]
+tests/unit/test_graph_schema.py::test_init_schema_idempotency_with_existing_indexes PASSED [ 67%]
+tests/unit/test_graph_schema.py::test_init_schema_handles_already_indexed_response_error PASSED [ 68%]
+tests/unit/test_graph_schema.py::test_init_schema_propagates_unrelated_database_error PASSED [ 70%]
+tests/unit/test_graph_writer.py::test_whitelisted_relationships_completeness PASSED [ 71%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_two_tuple PASSED [ 73%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_three_tuple PASSED [ 74%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_type PASSED [ 76%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_target PASSED [ 77%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_collision_defense PASSED [ 79%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_nested_dict_json PASSED [ 80%]
+tests/unit/test_graph_writer.py::test_upsert_node_created_vs_updated PASSED [ 82%]
+tests/unit/test_graph_writer.py::test_upsert_relationship_indexed_matching PASSED [ 83%]
+tests/unit/test_graph_writer.py::test_upsert_edge_alias PASSED           [ 85%]
+tests/unit/test_graph_writer.py::test_write_artifacts_alias PASSED       [ 86%]
+tests/unit/test_graph_writer.py::test_upsert_many_two_phase_and_reporting PASSED [ 88%]
+tests/unit/test_queries_mapper.py::test_mapper_fixtures_to_graph_view PASSED [ 89%]
+tests/unit/test_queries_mapper.py::test_mapper_staleness_and_freshness PASSED [ 91%]
+tests/unit/test_queries_mapper.py::test_mapper_superseded_decision PASSED [ 92%]
+tests/unit/test_queries_mapper.py::test_mapper_highlighted_paths PASSED  [ 94%]
+tests/unit/test_queries_mapper.py::test_to_evidence_items_explicit_and_synthesis PASSED [ 95%]
+tests/unit/test_queries_mapper.py::test_query_unpacking_helpers PASSED   [ 97%]
+tests/unit/test_queries_mapper.py::test_query_path_unpacking_canonical_ids PASSED [ 98%]
+tests/unit/test_queries_mapper.py::test_queries_empty_returns_safely PASSED [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+src\weave_brain\domain\models.py:101
+  D:\WEAVE\backend\src\weave_brain\domain\models.py:101: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    ingested_at: datetime = datetime.utcnow()
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 67 passed, 2 warnings in 1.06s ========================
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run pytest tests/ -q
+EXIT: 0
+sssssssss..sssssss...................................................... [ 84%]
+.............                                                            [100%]
+============================== warnings summary ===============================
+src\weave_brain\domain\models.py:101
+  D:\WEAVE\backend\src\weave_brain\domain\models.py:101: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    ingested_at: datetime = datetime.utcnow()
+
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+69 passed, 16 skipped, 2 warnings in 1.16s
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe build --wheel
+EXIT: 0
+Building wheel...
+Successfully built dist\backend-0.1.0-py3-none-any.whl
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run --isolated --no-project --with ./dist/backend-0.1.0-py3-none-any.whl python -c "import weave_brain; from weave_brain.api.main import app; print(weave_brain.__file__); print(app.title)"
+EXIT: 0
+Installed 25 packages in 99ms
+C:\Users\naiti\AppData\Local\uv\cache\archive-v0\5uhKpLE3C2rRgeFi\Lib\site-packages\weave_brain\__init__.py
+WEAVE
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd ci
+EXIT: 0
+
+added 231 packages, and audited 232 packages in 24s
+
+102 packages are looking for funding
+  run `npm fund` for details
+
+7 vulnerabilities (2 moderate, 5 high)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run lint
+EXIT: 0
+
+> frontend@0.0.0 lint
+> oxlint
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd test
+EXIT: 0
+
+> frontend@0.0.0 test
+> vitest run src/store
+
+
+ RUN  v5.0.5 D:/WEAVE/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  7 passed (7)
+   Start at  18:11:37
+   Duration  520ms (transform 55%, tests 21%, import 20%, worker 4%)
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run build
+EXIT: 0
+
+> frontend@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 350 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                         0.58 kB │ gzip:   0.36 kB
+dist/assets/index-CYRyZ1-J.css          5.81 kB │ gzip:   1.98 kB
+dist/assets/GraphCanvas-DLioOiRN.css   15.41 kB │ gzip:   2.56 kB
+dist/assets/GraphCanvas-DEB92fOY.js   231.40 kB │ gzip:  75.76 kB
+dist/assets/index-wQxpyLTf.js         347.77 kB │ gzip: 108.04 kB
+
+✓ built in 726ms
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run test:browser
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test
+
+[WebServer] INFO:     Started server process [24712]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)
+[WebServer] (node:6496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:2352) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\ask-brain.spec.ts:3:1 › fixture HTTP slice: ask, inspect, expand, deduplicate, filter and replace graph (1.4s)
+  ✓  2 tests\browser\ask-brain.spec.ts:67:1 › HTTP failure preserves the previous answer and graph, then retry recovers (507ms)
+  ✓  3 tests\browser\ask-brain.spec.ts:89:1 › mobile layout and direct-route reload stay usable (495ms)
+
+  3 passed (6.3s)
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd audit --json
+EXIT: 1
+{
+  "auditReportVersion": 2,
+  "vulnerabilities": {
+    "braces": {
+      "name": "braces",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1240992,
+          "name": "braces",
+          "dependency": "braces",
+          "title": "braces vulnerable to stack-exhaustion denial of service through deeply nested patterns",
+          "url": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "severity": "high",
+          "cwe": [
+            "CWE-674"
+          ],
+          "cvss": {
+            "score": 7.5,
+            "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<=3.0.3"
+        }
+      ],
+      "effects": [
+        "chokidar",
+        "micromatch"
+      ],
+      "range": "*",
+      "nodes": [
+        "node_modules/braces"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "chokidar": {
+      "name": "chokidar",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "braces"
+      ],
+      "effects": [
+        "tailwindcss"
+      ],
+      "range": "2.0.0 - 3.6.0",
+      "nodes": [
+        "node_modules/chokidar"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "fast-glob": {
+      "name": "fast-glob",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "micromatch"
+      ],
+      "effects": [],
+      "range": "*",
+      "nodes": [
+        "node_modules/fast-glob"
+      ],
+      "fixAvailable": true
+    },
+    "micromatch": {
+      "name": "micromatch",
+      "severity": "high",
+      "isDirect": false,
+      "via": [
+        "braces"
+      ],
+      "effects": [
+        "fast-glob",
+        "tailwindcss"
+      ],
+      "range": ">=0.2.0",
+      "nodes": [
+        "node_modules/micromatch"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "postcss-nested": {
+      "name": "postcss-nested",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        "postcss-selector-parser"
+      ],
+      "effects": [],
+      "range": "2.0.3 - 6.2.0",
+      "nodes": [
+        "node_modules/postcss-nested"
+      ],
+      "fixAvailable": true
+    },
+    "postcss-selector-parser": {
+      "name": "postcss-selector-parser",
+      "severity": "moderate",
+      "isDirect": false,
+      "via": [
+        {
+          "source": 1241232,
+          "name": "postcss-selector-parser",
+          "dependency": "postcss-selector-parser",
+          "title": "PostCSS: Quadratic complexity in flat selector parsing allows CPU exhaustion",
+          "url": "https://github.com/advisories/GHSA-rj75-hqrm-r3gf",
+          "severity": "moderate",
+          "cwe": [
+            "CWE-400",
+            "CWE-407"
+          ],
+          "cvss": {
+            "score": 5.9,
+            "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:N/S:U/C:N/I:N/A:H"
+          },
+          "range": "<7.1.6"
+        }
+      ],
+      "effects": [
+        "postcss-nested",
+        "tailwindcss"
+      ],
+      "range": "<7.1.6",
+      "nodes": [
+        "node_modules/postcss-selector-parser"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    },
+    "tailwindcss": {
+      "name": "tailwindcss",
+      "severity": "high",
+      "isDirect": true,
+      "via": [
+        "chokidar",
+        "fast-glob",
+        "micromatch",
+        "postcss-nested",
+        "postcss-selector-parser"
+      ],
+      "effects": [],
+      "range": "<=0.0.0-oxide-insiders.ff2c25f || 0.5.0 - 3.4.19",
+      "nodes": [
+        "node_modules/tailwindcss"
+      ],
+      "fixAvailable": {
+        "name": "tailwindcss",
+        "version": "4.3.3",
+        "isSemVerMajor": true
+      }
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 2,
+      "high": 5,
+      "critical": 0,
+      "total": 7
+    },
+    "dependencies": {
+      "prod": 115,
+      "dev": 160,
+      "optional": 46,
+      "peer": 0,
+      "peerOptional": 0,
+      "total": 274
+    }
+  }
+}
+
+
+FINAL PACKAGING / C CHECKS AFTER LAST IMPLEMENTATION CHANGES
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff check src/weave_brain/api src/weave_brain/core src/weave_brain/services tests/unit/test_api.py
+EXIT: 0
+All checks passed!
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run ruff format --check src/weave_brain/api src/weave_brain/core src/weave_brain/services tests/unit/test_api.py
+EXIT: 0
+10 files already formatted
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe build --wheel
+EXIT: 0
+Building wheel...
+Successfully built dist\backend-0.1.0-py3-none-any.whl
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: C:\Users\naiti\AppData\Local\Programs\Python\Python312\Scripts\uv.exe run --isolated --no-project --with ./dist/backend-0.1.0-py3-none-any.whl python -c "import weave_brain; from weave_brain.api.main import app; print(weave_brain.__file__); print(app.title)"
+EXIT: 0
+Installed 25 packages in 85ms
+C:\Users\naiti\AppData\Local\uv\cache\archive-v0\yoEU5hABTyESvv4K\Lib\site-packages\weave_brain\__init__.py
+WEAVE
+

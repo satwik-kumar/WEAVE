@@ -1,0 +1,369 @@
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run lint
+EXIT: 0
+
+> frontend@0.0.0 lint
+> oxlint
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run build
+EXIT: 0
+
+> frontend@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 823 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                           1.43 kB │ gzip:   0.70 kB
+dist/assets/GraphCanvas-DLioOiRN.css     15.41 kB │ gzip:   2.56 kB
+dist/assets/index-BbbQBzEx.css           20.12 kB │ gzip:   5.16 kB
+dist/assets/OnboardingPage-DxRIGlmb.js    2.77 kB │ gzip:   1.11 kB
+dist/assets/HealthPage-hAYN6nZA.js        3.28 kB │ gzip:   1.33 kB
+dist/assets/GraphCanvas-D-McxleM.js     381.74 kB │ gzip: 124.93 kB
+dist/assets/index-BgaXdGEl.js           417.96 kB │ gzip: 130.77 kB
+
+✓ built in 479ms
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd test
+EXIT: 0
+
+> frontend@0.0.0 test
+> vitest run src/store
+
+
+ RUN  v5.0.5 D:/WEAVE/frontend
+
+
+ Test Files  1 passed (1)
+      Tests  8 passed (8)
+   Start at  19:16:08
+   Duration  229ms (transform 51%, tests 22%, import 21%, worker 5%)
+
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd run test:browser
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test
+
+[WebServer] INFO:     Started server process [12536]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)
+[WebServer] (node:21044) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:17756) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\ask-brain.spec.ts:3:1 › fixture HTTP slice: ask, inspect, expand, deduplicate, filter and replace graph (2.0s)
+  ✓  2 tests\browser\ask-brain.spec.ts:71:1 › HTTP failure preserves the previous answer and graph, then retry recovers (845ms)
+  ✓  3 tests\browser\ask-brain.spec.ts:93:1 › mobile layout and direct-route reload stay usable (761ms)
+  ✓  4 tests\browser\ask-brain.spec.ts:116:1 › followups, decision timeline and context-menu connection use the shared API (1.8s)
+  ✓  5 tests\browser\ask-brain.spec.ts:156:1 › health and onboarding reports work through navigation and direct reloads (2.0s)
+  ✓  6 tests\browser\theme.spec.ts:5:1 › reference design: both themes across empty, loading, populated, details, expansion and error states (10.6s)
+[WebServer] 7:16:31 pm [vite] (client) [console.warn] You have Reduced Motion enabled on your device. Animations may not appear as expected.. For more information and steps for solving, visit https://motion.dev/troubleshooting/reduced-motion-disabled
+[WebServer] 7:16:32 pm [vite] (client) [console.warn] You have Reduced Motion enabled on your device. Animations may not appear as expected.. For more information and steps for solving, visit https://motion.dev/troubleshooting/reduced-motion-disabled
+  ✓  7 tests\browser\theme.spec.ts:145:1 › theme bootstrap, persistence, system updates, keyboard access and reduced motion (1.2s)
+  ✓  8 tests\browser\theme.spec.ts:206:1 › theme control remains usable when browser storage is blocked (390ms)
+  ✓  9 tests\browser\visual.spec.ts:3:1 › redesigned workspace: empty, populated, evidence, selection and responsive screenshots (3.6s)
+
+  9 passed (27.9s)
+
+WORKDIR: D:\WEAVE\frontend
+COMMAND: npm.cmd ls dialkit motion --depth=0
+EXIT: 0
+frontend@0.0.0 D:\WEAVE\frontend
+├── dialkit@2.0.2
+└── motion@14.3.0
+
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: D:\WEAVE\backend\.venv\Scripts\ruff.exe check
+EXIT: 0
+All checks passed!
+
+WORKDIR: D:\WEAVE\backend
+COMMAND: D:\WEAVE\backend\.venv\Scripts\python.exe -m pytest tests/unit/ -v
+EXIT: 0
+============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.1.1, pluggy-1.7.0 -- D:\WEAVE\backend\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\WEAVE\backend
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collecting ... collected 101 items
+
+tests/unit/test_api.py::test_chat_invalid[body0] PASSED                  [  0%]
+tests/unit/test_api.py::test_chat_invalid[body1] PASSED                  [  1%]
+tests/unit/test_api.py::test_chat_invalid[body2] PASSED                  [  2%]
+tests/unit/test_api.py::test_chat_invalid[body3] PASSED                  [  3%]
+tests/unit/test_api.py::test_chat_invalid[body4] PASSED                  [  4%]
+tests/unit/test_api.py::test_chat_contract[Who owns authentication?-service_overview] PASSED [  5%]
+tests/unit/test_api.py::test_chat_contract[What breaks if authentication goes down?-blast_radius] PASSED [  6%]
+tests/unit/test_api.py::test_chat_contract[Tell me about sales-unsupported] PASSED [  7%]
+tests/unit/test_api.py::test_chat_contract[Change impact of authentication-change_impact] PASSED [  8%]
+tests/unit/test_api.py::test_chat_contract[Why do authentication tokens expire?-decision_rationale] PASSED [  9%]
+tests/unit/test_api.py::test_chat_contract[Who are authentication experts?-expert_finder] PASSED [ 10%]
+tests/unit/test_api.py::test_overview_direction_and_nullability PASSED   [ 11%]
+tests/unit/test_api.py::test_blast_direction PASSED                      [ 12%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=0] PASSED [ 13%]
+tests/unit/test_api.py::test_query_validation[/api/graph/neighborhood/service:authentication-api?depth=4] PASSED [ 14%]
+tests/unit/test_api.py::test_query_validation[/api/services/service:authentication-api/blast-radius?max_depth=4] PASSED [ 15%]
+tests/unit/test_api.py::test_query_validation[/api/search?q=%20] PASSED  [ 16%]
+tests/unit/test_api.py::test_query_validation[/api/search] PASSED        [ 17%]
+tests/unit/test_api.py::test_query_validation[/api/entities/not-an-id] PASSED [ 18%]
+tests/unit/test_api.py::test_query_validation[/api/graph/shortest-path?from_id=bad&to_id=bad] PASSED [ 19%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/entities/service:unknown] PASSED [ 20%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/services/service:unknown] PASSED [ 21%]
+tests/unit/test_api.py::test_unknown_entity_never_fabricated[/api/graph/neighborhood/service:unknown] PASSED [ 22%]
+tests/unit/test_api.py::test_slash_ids[repository:acme/auth-api] PASSED  [ 23%]
+tests/unit/test_api.py::test_slash_ids[repository%3Aacme%2Fauth-api] PASSED [ 24%]
+tests/unit/test_api.py::test_shortest_preserves_direction PASSED         [ 25%]
+tests/unit/test_api.py::test_database_error_and_recovery PASSED          [ 26%]
+tests/unit/test_api.py::test_fixture_mode_not_ready PASSED               [ 27%]
+tests/unit/test_api.py::test_no_production_fixture_fallback PASSED       [ 28%]
+tests/unit/test_api.py::test_graph_bounds_and_dangling_edges PASSED      [ 29%]
+tests/unit/test_api.py::test_cors_parsing[["https://example.com", "http://localhost:5173"]] PASSED [ 30%]
+tests/unit/test_api.py::test_cors_parsing[https://example.com, http://localhost:5173] PASSED [ 31%]
+tests/unit/test_api.py::test_graph_log_redaction PASSED                  [ 32%]
+tests/unit/test_api.py::test_unexpected_errors_are_safe_and_cors_readable PASSED [ 33%]
+tests/unit/test_api.py::test_env_file_and_process_precedence PASSED      [ 34%]
+tests/unit/test_api.py::test_invalid_origins_rejected[*] PASSED          [ 35%]
+tests/unit/test_api.py::test_invalid_origins_rejected[[]] PASSED         [ 36%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://user:password@example.com] PASSED [ 37%]
+tests/unit/test_api.py::test_invalid_origins_rejected[https://example.com/path] PASSED [ 38%]
+tests/unit/test_api.py::test_shortest_path_never_exceeds_three_hops PASSED [ 39%]
+tests/unit/test_graph_schema.py::test_entity_type_mapping_completeness PASSED [ 40%]
+tests/unit/test_graph_schema.py::test_get_label_for_unknown_type PASSED  [ 41%]
+tests/unit/test_graph_schema.py::test_whitelisted_labels PASSED          [ 42%]
+tests/unit/test_graph_schema.py::test_init_schema_creates_indexes_on_empty_graph PASSED [ 43%]
+tests/unit/test_graph_schema.py::test_init_schema_idempotency_with_existing_indexes PASSED [ 44%]
+tests/unit/test_graph_schema.py::test_init_schema_handles_already_indexed_response_error PASSED [ 45%]
+tests/unit/test_graph_schema.py::test_init_schema_propagates_unrelated_database_error PASSED [ 46%]
+tests/unit/test_graph_writer.py::test_whitelisted_relationships_completeness PASSED [ 47%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_two_tuple PASSED [ 48%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_three_tuple PASSED [ 49%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_type PASSED [ 50%]
+tests/unit/test_graph_writer.py::test_normalize_relationship_invalid_target PASSED [ 51%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_collision_defense PASSED [ 52%]
+tests/unit/test_graph_writer.py::test_prepare_node_properties_nested_dict_json PASSED [ 53%]
+tests/unit/test_graph_writer.py::test_upsert_node_created_vs_updated PASSED [ 54%]
+tests/unit/test_graph_writer.py::test_upsert_relationship_indexed_matching PASSED [ 55%]
+tests/unit/test_graph_writer.py::test_upsert_edge_alias PASSED           [ 56%]
+tests/unit/test_graph_writer.py::test_write_artifacts_alias PASSED       [ 57%]
+tests/unit/test_graph_writer.py::test_upsert_many_two_phase_and_reporting PASSED [ 58%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_valid PASSED [ 59%]
+tests/unit/test_ingestion_connectors.py::test_load_json_directory_all_demo_data PASSED [ 60%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_not_found PASSED [ 61%]
+tests/unit/test_ingestion_connectors.py::test_load_json_directory_not_found PASSED [ 62%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_invalid_root_type PASSED [ 63%]
+tests/unit/test_ingestion_connectors.py::test_load_json_file_validation_error PASSED [ 64%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_with_frontmatter PASSED [ 65%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_without_frontmatter PASSED [ 66%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_directory PASSED [ 67%]
+tests/unit/test_ingestion_connectors.py::test_parse_markdown_file_not_found PASSED [ 68%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_file_ast_and_imports PASSED [ 69%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_file_syntax_error_handling PASSED [ 70%]
+tests/unit/test_ingestion_connectors.py::test_parse_python_repository_contains_and_test_detection PASSED [ 71%]
+tests/unit/test_ingestion_demo_data.py::test_demo_files_exist_and_parse PASSED [ 72%]
+tests/unit/test_ingestion_demo_data.py::test_official_frozen_demo_ids_present PASSED [ 73%]
+tests/unit/test_ingestion_demo_data.py::test_referential_integrity PASSED [ 74%]
+tests/unit/test_ingestion_demo_data.py::test_graph_edge_directions PASSED [ 75%]
+tests/unit/test_ingestion_demo_data.py::test_intentional_knowledge_gaps PASSED [ 76%]
+tests/unit/test_ingestion_demo_data.py::test_edge_properties_and_writer_compatibility PASSED [ 77%]
+tests/unit/test_queries_mapper.py::test_mapper_fixtures_to_graph_view PASSED [ 78%]
+tests/unit/test_queries_mapper.py::test_mapper_staleness_and_freshness PASSED [ 79%]
+tests/unit/test_queries_mapper.py::test_mapper_superseded_decision PASSED [ 80%]
+tests/unit/test_queries_mapper.py::test_mapper_highlighted_paths PASSED  [ 81%]
+tests/unit/test_queries_mapper.py::test_to_evidence_items_explicit_and_synthesis PASSED [ 82%]
+tests/unit/test_queries_mapper.py::test_query_unpacking_helpers PASSED   [ 83%]
+tests/unit/test_queries_mapper.py::test_query_path_unpacking_canonical_ids PASSED [ 84%]
+tests/unit/test_queries_mapper.py::test_queries_empty_returns_safely PASSED [ 85%]
+tests/unit/test_query_limits.py::test_query_limit_surfaces_omitted_rows_without_unbounded_output PASSED [ 86%]
+tests/unit/test_reports_agent.py::test_health_gaps_and_onboarding_contracts PASSED [ 87%]
+tests/unit/test_reports_agent.py::test_timeline_order_and_unique_router_registration PASSED [ 88%]
+tests/unit/test_reports_agent.py::test_experts_have_real_project_evidence_and_impact_never_fabricates_tests PASSED [ 89%]
+tests/unit/test_reports_agent.py::test_openai_actual_http_adapter_and_agent_citation_roundtrip PASSED [ 90%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[Uncited invented claim.] PASSED [ 91%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[Claim [S999]] PASSED [ 92%]
+tests/unit/test_reports_agent.py::test_agent_rejects_missing_invalid_citations_and_unknown_entities[service:invented [S1]] PASSED [ 93%]
+tests/unit/test_reports_agent.py::test_provider_failure_is_503_without_retrieval_fallback PASSED [ 94%]
+tests/unit/test_reports_agent.py::test_gemini_stateless_wire_protocol PASSED [ 95%]
+tests/unit/test_reports_agent.py::test_runaway_model_tool_calls_are_bounded PASSED [ 96%]
+tests/unit/test_reports_agent.py::test_other_provider_full_tool_roundtrip[gemini] PASSED [ 97%]
+tests/unit/test_reports_agent.py::test_other_provider_full_tool_roundtrip[anthropic] PASSED [ 98%]
+tests/unit/test_seed_demo.py::test_run_seed_with_mock_graph PASSED       [ 99%]
+tests/unit/test_seed_demo.py::test_run_reset_clears_and_reseeds PASSED   [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\WEAVE\backend\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================= 101 passed, 1 warning in 1.65s ========================
+
+WORKDIR: D:\WEAVE
+COMMAND: D:\WEAVE\.agents\skills\impeccable\scripts\impeccable.cmd detect frontend/src --json
+EXIT: 0
+[]
+
+WORKDIR: D:\WEAVE
+COMMAND: git diff --check
+EXIT: 0
+warning: in the working copy of 'README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/pyproject.toml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'backend/uv.lock', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/App.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/App.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/index.css', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/main.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/types/api.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/vite.config.ts', LF will be replaced by CRLF the next time Git touches it
+
+
+Final responsive status/composer correction: resize keeps active loading/error feedback visible; textarea may shrink beside submit button.
+COMMAND: npm.cmd run lint
+EXIT: 0
+
+> frontend@0.0.0 lint
+> oxlint
+
+
+COMMAND: npm.cmd run build
+EXIT: 0
+
+> frontend@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 823 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                           1.43 kB │ gzip:   0.70 kB
+dist/assets/GraphCanvas-DLioOiRN.css     15.41 kB │ gzip:   2.56 kB
+dist/assets/index-CyC5axjX.css           20.13 kB │ gzip:   5.15 kB
+dist/assets/OnboardingPage-DGTzVquw.js    2.77 kB │ gzip:   1.11 kB
+dist/assets/HealthPage-CuKR_HYq.js        3.28 kB │ gzip:   1.33 kB
+dist/assets/GraphCanvas-jzeuv-3-.js     381.74 kB │ gzip: 124.93 kB
+dist/assets/index-Coyk47wb.js           418.16 kB │ gzip: 130.83 kB
+
+✓ built in 732ms
+
+COMMAND: npm.cmd run test:browser
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test
+
+[WebServer] INFO:     Started server process [27108]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)
+[WebServer] (node:26676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:27696) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\ask-brain.spec.ts:3:1 › fixture HTTP slice: ask, inspect, expand, deduplicate, filter and replace graph (2.5s)
+  ✓  2 tests\browser\ask-brain.spec.ts:71:1 › HTTP failure preserves the previous answer and graph, then retry recovers (962ms)
+  ✓  3 tests\browser\ask-brain.spec.ts:93:1 › mobile layout and direct-route reload stay usable (902ms)
+  ✓  4 tests\browser\ask-brain.spec.ts:116:1 › followups, decision timeline and context-menu connection use the shared API (2.0s)
+  ✓  5 tests\browser\ask-brain.spec.ts:156:1 › health and onboarding reports work through navigation and direct reloads (1.7s)
+  ✓  6 tests\browser\theme.spec.ts:5:1 › reference design: both themes across empty, loading, populated, details, expansion and error states (10.6s)
+[WebServer] 11:01:34 pm [vite] (client) [console.warn] You have Reduced Motion enabled on your device. Animations may not appear as expected.. For more information and steps for solving, visit https://motion.dev/troubleshooting/reduced-motion-disabled
+[WebServer] 11:01:34 pm [vite] (client) [console.warn] You have Reduced Motion enabled on your device. Animations may not appear as expected.. For more information and steps for solving, visit https://motion.dev/troubleshooting/reduced-motion-disabled
+  ✓  7 tests\browser\theme.spec.ts:145:1 › theme bootstrap, persistence, system updates, keyboard access and reduced motion (1.4s)
+  ✓  8 tests\browser\theme.spec.ts:206:1 › theme control remains usable when browser storage is blocked (391ms)
+  ✓  9 tests\browser\visual.spec.ts:3:1 › redesigned workspace: empty, populated, evidence, selection and responsive screenshots (3.6s)
+
+  9 passed (28.9s)
+
+
+Final motion review: keyboard-triggered exits now use immediate presence variants.
+COMMAND: npm.cmd run lint; WEAVE_BROWSER_LIVE=0
+EXIT: 0
+
+> frontend@0.0.0 lint
+> oxlint
+
+
+COMMAND: npm.cmd run build; WEAVE_BROWSER_LIVE=0
+EXIT: 0
+
+> frontend@0.0.0 build
+> tsc -b && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 823 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                           1.43 kB │ gzip:   0.70 kB
+dist/assets/GraphCanvas-DLioOiRN.css     15.41 kB │ gzip:   2.56 kB
+dist/assets/index-CyC5axjX.css           20.13 kB │ gzip:   5.15 kB
+dist/assets/OnboardingPage-CK_gWnul.js    2.77 kB │ gzip:   1.11 kB
+dist/assets/HealthPage-DfJmHiZT.js        3.28 kB │ gzip:   1.33 kB
+dist/assets/GraphCanvas-CGhZQrcA.js     381.94 kB │ gzip: 124.96 kB
+dist/assets/index-CcEdApU5.js           418.16 kB │ gzip: 130.83 kB
+
+✓ built in 601ms
+
+COMMAND: npm.cmd run test:browser -- theme.spec.ts; WEAVE_BROWSER_LIVE=0
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test theme.spec.ts
+
+[WebServer] INFO:     Started server process [27236]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)
+[WebServer] (node:3120) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:27640) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\theme.spec.ts:5:1 › reference design: both themes across empty, loading, populated, details, expansion and error states (10.6s)
+[WebServer] 11:02:35 pm [vite] (client) [console.warn] You have Reduced Motion enabled on your device. Animations may not appear as expected.. For more information and steps for solving, visit https://motion.dev/troubleshooting/reduced-motion-disabled
+[WebServer] 11:02:35 pm [vite] (client) [console.warn] You have Reduced Motion enabled on your device. Animations may not appear as expected.. For more information and steps for solving, visit https://motion.dev/troubleshooting/reduced-motion-disabled
+  ✓  2 tests\browser\theme.spec.ts:145:1 › theme bootstrap, persistence, system updates, keyboard access and reduced motion (1.3s)
+  ✓  3 tests\browser\theme.spec.ts:206:1 › theme control remains usable when browser storage is blocked (404ms)
+
+  3 passed (16.9s)
+
+COMMAND: npm.cmd run test:browser -- live.spec.ts; WEAVE_BROWSER_LIVE=1
+EXIT: 0
+
+> frontend@0.0.0 test:browser
+> playwright test live.spec.ts
+
+[WebServer] INFO:     Started server process [15608]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)
+[WebServer] (node:7436) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:16636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests\browser\live.spec.ts:3:1 › real seeded FalkorDB: grounded answers, inspection, expansion and report routes (3.5s)
+
+  1 passed (8.1s)
+

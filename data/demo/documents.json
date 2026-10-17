@@ -1,0 +1,31 @@
+[
+  {
+    "source_id": "doc-auth-runbook",
+    "source_type": "confluence",
+    "entity_type": "document",
+    "canonical_id": "document:auth-runbook",
+    "title": "Auth Service Operations Runbook",
+    "source_url": "https://wiki.acme.internal/docs/auth-runbook",
+    "properties": {
+      "source_url": "https://wiki.acme.internal/docs/auth-runbook",
+      "content_excerpt": "Emergency procedures and token rotation runbook for auth-api"
+    },
+    "relationships": [
+      ["DOCUMENTS", "service:authentication-api"]
+    ]
+  },
+  {
+    "source_id": "repo-acme-auth-api",
+    "source_type": "github",
+    "entity_type": "repository",
+    "canonical_id": "repository:acme/auth-api",
+    "title": "acme/auth-api",
+    "source_url": "https://github.com/acme/auth-api",
+    "properties": {
+      "url": "https://github.com/acme/auth-api",
+      "language": "Python",
+      "default_branch": "main"
+    },
+    "relationships": []
+  }
+]

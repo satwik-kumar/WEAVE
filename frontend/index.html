@@ -2,9 +2,40 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      (() => {
+        let preference = "system";
+        try {
+          const saved = localStorage.getItem("weave-theme");
+          if (saved === "light" || saved === "dark") preference = saved;
+        } catch {}
+        document.documentElement.dataset.preference = preference;
+        document.documentElement.dataset.theme =
+          preference === "system"
+            ? matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light"
+            : preference;
+      })();
+    </script>
+    <!-- Critical surface color is available before the application CSS loads. -->
+    <style>
+      html {
+        background: #edeee9;
+        color-scheme: light;
+      }
+      html[data-theme="dark"] {
+        background: #1d211c;
+        color-scheme: dark;
+      }
+    </style>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <meta
+      name="description"
+      content="WEAVE connects engineering questions to graph evidence."
+    />
+    <title>WEAVE — Company Brain</title>
   </head>
   <body>
     <div id="root"></div>
