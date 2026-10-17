@@ -7,9 +7,8 @@
     "title": "Stolen long-lived token exploited",
     "properties": {
       "severity": "P1",
-      "status": "resolved",
-      "summary": "Credential leak via public test script compromised production auth token",
-      "resolved_at": "2025-11-14T18:30:00Z"
+      "status": "open",
+      "summary": "Credential leak via public test script compromised production auth token"
     },
     "relationships": [
       ["AFFECTS", "service:authentication-api"]
