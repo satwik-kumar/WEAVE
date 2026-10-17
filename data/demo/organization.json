@@ -1,0 +1,105 @@
+[
+  {
+    "source_id": "team-platform-eng",
+    "source_type": "hr",
+    "entity_type": "team",
+    "canonical_id": "team:platform-engineering",
+    "title": "Platform Engineering",
+    "properties": {
+      "description": "Core infrastructure, identity platforms, and platform reliability",
+      "slack_channel": "#platform-eng"
+    },
+    "relationships": [
+      ["OWNS", "service:authentication-api"],
+      ["OWNS", "service:notification-service"]
+    ]
+  },
+  {
+    "source_id": "team-backend-core",
+    "source_type": "hr",
+    "entity_type": "team",
+    "canonical_id": "team:backend-core",
+    "title": "Backend Core",
+    "properties": {
+      "description": "Core domain business logic and user profile microservices",
+      "slack_channel": "#backend"
+    },
+    "relationships": [
+      ["OWNS", "service:user-profile-api"]
+    ]
+  },
+  {
+    "source_id": "team-data-infra",
+    "source_type": "hr",
+    "entity_type": "team",
+    "canonical_id": "team:data-infra",
+    "title": "Data Infra",
+    "properties": {
+      "description": "Data infrastructure, streaming pipelines, and analytical stores",
+      "slack_channel": "#data-infra"
+    },
+    "relationships": []
+  },
+  {
+    "source_id": "usr-priya-sharma",
+    "source_type": "hr",
+    "entity_type": "person",
+    "canonical_id": "person:priya-sharma",
+    "title": "Priya Sharma",
+    "properties": {
+      "role": "Lead",
+      "email": "priya@acme.internal",
+      "slug": "priya-sharma"
+    },
+    "relationships": [
+      ["MEMBER_OF", "team:platform-engineering"],
+      ["WORKED_ON", "project:auth-modernization", {"role": "Lead", "period": "2025-Q3-present"}]
+    ]
+  },
+  {
+    "source_id": "usr-james-chen",
+    "source_type": "hr",
+    "entity_type": "person",
+    "canonical_id": "person:james-chen",
+    "title": "James Chen",
+    "properties": {
+      "role": "Senior Engineer",
+      "email": "james@acme.internal",
+      "slug": "james-chen"
+    },
+    "relationships": [
+      ["MEMBER_OF", "team:platform-engineering"],
+      ["WORKED_ON", "project:auth-modernization", {"role": "Senior Engineer", "period": "2025-Q4-present"}]
+    ]
+  },
+  {
+    "source_id": "usr-aisha-kowalski",
+    "source_type": "hr",
+    "entity_type": "person",
+    "canonical_id": "person:aisha-kowalski",
+    "title": "Aisha Kowalski",
+    "properties": {
+      "role": "Engineer",
+      "email": "aisha@acme.internal",
+      "slug": "aisha-kowalski"
+    },
+    "relationships": [
+      ["MEMBER_OF", "team:backend-core"]
+    ]
+  },
+  {
+    "source_id": "usr-dev-four",
+    "source_type": "hr",
+    "entity_type": "person",
+    "canonical_id": "person:dev-four",
+    "title": "Dev Four",
+    "properties": {
+      "role": "Engineer",
+      "email": "dev-four@acme.internal",
+      "slug": "dev-four"
+    },
+    "relationships": [
+      ["MEMBER_OF", "team:data-infra"]
+    ]
+  }
+]

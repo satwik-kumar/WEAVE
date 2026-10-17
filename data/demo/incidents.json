@@ -1,0 +1,33 @@
+[
+  {
+    "source_id": "inc-007",
+    "source_type": "pagerduty",
+    "entity_type": "incident",
+    "canonical_id": "incident:inc-007",
+    "title": "Stolen long-lived token exploited",
+    "properties": {
+      "severity": "P1",
+      "status": "resolved",
+      "summary": "Credential leak via public test script compromised production auth token",
+      "resolved_at": "2025-11-14T18:30:00Z"
+    },
+    "relationships": [
+      ["AFFECTS", "service:authentication-api"]
+    ]
+  },
+  {
+    "source_id": "eng-042",
+    "source_type": "jira",
+    "entity_type": "ticket",
+    "canonical_id": "ticket:eng-042",
+    "title": "Rotate legacy signing keys",
+    "properties": {
+      "priority": "high",
+      "status": "in_progress",
+      "summary": "Rotate all legacy RS256 token signing keys and revoke deprecated certificates"
+    },
+    "relationships": [
+      ["AFFECTS", "service:authentication-api"]
+    ]
+  }
+]
