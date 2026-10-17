@@ -10,7 +10,12 @@ class LLMProvider(ABC):
 
 class AnthropicProvider(LLMProvider):
     def __init__(self):
-        import anthropic
+        try:
+            import anthropic
+        except (ImportError, ModuleNotFoundError) as err:
+            raise OSError(
+                "Anthropic package not installed. Install anthropic or configure another LLM provider."
+            ) from err
 
         key = os.environ.get("LLM_API_KEY")
         if not key:
@@ -29,7 +34,12 @@ class AnthropicProvider(LLMProvider):
 
 class OpenAIProvider(LLMProvider):
     def __init__(self):
-        import openai
+        try:
+            import openai
+        except (ImportError, ModuleNotFoundError) as err:
+            raise OSError(
+                "OpenAI package not installed. Install openai or configure another LLM provider."
+            ) from err
 
         key = os.environ.get("LLM_API_KEY")
         if not key:
@@ -50,4 +60,4 @@ def get_provider() -> LLMProvider:
         return AnthropicProvider()
     if name == "openai":
         return OpenAIProvider()
-    raise ValueError(f"Unknown LLM_PROVIDER '{name}'. Use 'anthropic' or 'openai'.")
+    raise OSError(f"Unknown LLM_PROVIDER '{name}'. Use 'anthropic' or 'openai'.")

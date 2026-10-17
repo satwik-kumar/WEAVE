@@ -71,9 +71,10 @@ def onboarding(
             status_code=400, detail="service_id must start with 'service:'"
         )
     try:
-        provider = get_provider()
+        try:
+            provider = get_provider()
+        except OSError:
+            provider = None
         return build_onboarding_brief(service_id, provider)
-    except OSError as e:
-        raise HTTPException(status_code=503, detail=str(e)) from e
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) from e
