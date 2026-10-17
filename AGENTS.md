@@ -1,100 +1,78 @@
-# RepoCompass Brain — Engineering Rules & Operating System
+# WEAVE Brain Engineering Rules
 
-## 1. Product Vision
-Graph-powered engineering company knowledge assistant ("Company Brain").
+## 1. Product
+Graph-powered engineering company knowledge assistant.
 Track 03: Company Brain — Graph Hacks 2026.
-Core loop: Ask an engineering/organizational question -> traverse FalkorDB -> return an evidence-backed answer + dynamic interactive subgraph (@xyflow/react).
+Demo: ask a question, traverse FalkorDB, get an evidence-backed answer + dynamic graph.
 
-## 2. Four-Developer Module Ownership Matrix
-Every developer/agent session MUST strictly stay within its assigned scope:
+## 2. File Ownership Table (4 Developers)
 
-- **Developer A (Ingestion & Demo Data):**
-  - Owns: `backend/src/repocompass_brain/ingestion/`, `data/demo/`, `scripts/` (`seed_demo.py`, `validate_demo.py`, `reset_demo.py`), `backend/tests/unit/test_ingestion*.py`
-  - Others may: Read/run only, never edit without PR.
+| Developer | Owns these folders (may freely edit) | Never edits these (without group approval) |
+| :--- | :--- | :--- |
+| **Dev A** | `backend/src/*/ingestion/`, `data/demo/`, `scripts/`, `backend/tests/unit/test_ingestion*.py` | `graph/`, `api/`, `agent/`, `frontend/`, `domain/models.py` |
+| **Dev B** | `backend/src/*/graph/`, `docs/graph-schema.md`, `backend/tests/integration/`, `docker-compose.yml` | `ingestion/`, `api/`, `agent/`, `frontend/`, `domain/models.py` |
+| **Dev C** | `backend/src/*/api/` (except `reports.py`), `backend/src/*/services/`, `backend/src/*/core/`, `frontend/` (except D's files), `.github/workflows/` | `graph/`, `ingestion/`, `agent/`, `domain/models.py` |
+| **Dev D** | `backend/src/*/agent/`, `backend/src/*/api/routes/reports.py`, `frontend/src/pages/HealthPage.tsx`, `frontend/src/components/chat/SuggestedFollowups.tsx`, `frontend/src/components/entities/DecisionTimeline.tsx`, `docs/evaluation.md` | `graph/`, `ingestion/`, `api/routes/chat.py`, `domain/models.py` |
 
-- **Developer B (FalkorDB & Graph Retrieval):**
-  - Owns: `backend/src/repocompass_brain/graph/` (`client.py`, `schema.py`, `writer.py`, `queries.py`, `mapper.py`, `fixtures.py`), `backend/tests/integration/`, `docs/graph-schema.md`, `docker-compose.yml`
-  - Others may: Read only; A and D may add integration test cases via PR.
+### Shared Files (Require Group Agreement Before Any Change)
+- `backend/src/*/domain/models.py` — Shared Pydantic data models
+- `frontend/src/types/api.ts` — Shared TypeScript interfaces
+- `docs/graph-schema.md` & `docs/api-contracts.md` — Graph & API contracts
+- `docker-compose.yml` — Database setup (Dev B is canonical owner)
+- `backend/pyproject.toml` / `uv.lock` — Python dependency list
+- `AGENTS.md` — Project rules
 
-- **Developer C (Core API, Services, Frontend & Deployment):**
-  - Owns: `backend/src/repocompass_brain/main.py`, `backend/src/repocompass_brain/core/`, `backend/src/repocompass_brain/api/routes/health.py`, `backend/src/repocompass_brain/api/routes/chat.py`, `backend/src/repocompass_brain/services/`, `frontend/` (except D's explicit files), `.github/workflows/ci.yml`
-  - Others may: D registers `reports.py` router in `main.py`, `/health` route in `App.tsx`/`Sidebar.tsx`, and renders `SuggestedFollowups` inside `BrainAnswer`.
+## 3. Canonical ID Format & Frozen Demo Entity IDs
+Formula: `type:slug` (lowercase with hyphens, no spaces, no capitals; forward slashes for file paths).
 
-- **Developer D (LLM Agent, Knowledge Health & Advanced Features):**
-  - Owns: `backend/src/repocompass_brain/agent/`, `backend/src/repocompass_brain/api/routes/reports.py`, `frontend/src/pages/HealthPage.tsx`, `frontend/src/components/chat/SuggestedFollowups.tsx`, `frontend/src/components/entities/DecisionTimeline.tsx`, `docs/evaluation.md`
-  - Others may: C calls `orchestrator.process_question()` from `chat_service.py`, never edits `agent/`.
-
-### Shared Files (Require PR Review / Explicit Approval Before Editing)
-- `backend/src/repocompass_brain/domain/models.py`
-- `frontend/src/types/api.ts`
-- `docs/api-contracts.md`
-- `backend/pyproject.toml` and `uv.lock` (all run `uv sync` after merge)
-- `docker-compose.yml` (B's branch is canonical)
-- `AGENTS.md`
-- `README.md` (C authors, all review)
-
-## 3. Architecture & Contract Rules
-1. `domain/models.py` (and `frontend/src/types/api.ts`) is the frozen contract. Never pass raw untyped dicts across module boundaries.
-2. All Cypher lives exclusively in `graph/queries.py`, `graph/writer.py`, and `graph/schema.py`. Parameterized queries ONLY (`$param`). Never use f-strings for values or LLM-generated Cypher.
-3. Ingestion produces `SourceArtifact` objects. It never calls Cypher directly; it passes artifacts to `graph/writer.py`.
-4. API routes and the LLM agent call named service/query functions. Never expose or call raw Cypher from `api/` or `agent/`.
-5. The graph does the retrieval; the LLM does the explanation. If `LLM_API_KEY` is unset or times out, fall back gracefully to deterministic routing and response synthesis so the app never crashes.
-6. Frontend renders `GraphView` returned by the backend. Never hard-code graph structure or connect to FalkorDB directly from the frontend.
-7. Bound graph traversal depth: max 3 hops. Bound result size: `LIMIT 50` (hard cap 100 nodes).
-
-## 4. Graph Schema & Canonical ID Convention
-
-### Stable ID Convention
-Format: `<entity_type>:<slug>` (lowercase, hyphens, no spaces; forward slashes for file paths).
-- `person:priya-sharma`
-- `team:platform-engineering`
+### Official Demo Entity IDs (Use these exact strings everywhere)
 - `service:authentication-api`
+- `service:user-profile-api`
+- `service:notification-service`
+- `service:data-pipeline`
+- `team:platform-engineering`
+- `team:backend-core`
+- `team:data-infra`
+- `person:priya-sharma`
+- `person:james-chen`
+- `person:aisha-kowalski`
+- `person:dev-four`
 - `project:auth-modernization`
-- `repository:acme/auth-api`
-- `file:acme/auth-api:src/auth/tokens.py`
-- `document:auth-runbook`
 - `decision:adr-001`
-- `ticket:eng-042`
+- `decision:adr-002`
+- `decision:adr-003`
 - `incident:inc-007`
+- `ticket:eng-042`
+- `repository:acme/auth-api`
+- `document:auth-runbook`
 
-### Node Labels & Properties
-- Labels: `Person`, `Team`, `Service`, `Project`, `Repository`, `File`, `Document`, `Decision`, `Ticket`, `Incident`
-- Every node MUST carry: `id` (canonical ID), `title`, `source_id`, `source_type`, `ingested_at` (ISO-8601 string).
-- Preserve `artifact.ingested_at` when seeding so historical timestamps drive the Freshness/Staleness calculation (`<30d` fresh, `30-90d` aging, `>90d` stale).
+## 4. Graph Edge Directions (Critical for Correctness)
+- `(:Team)-[:OWNS]->(:Service)` — Team points to what it owns
+- `(:Person)-[:MEMBER_OF]->(:Team)` — Person points to their team
+- `(:Service)-[:DEPENDS_ON]->(:Service)` — Service A points to Service B that it needs (To find what breaks if B goes down: match arrows pointing INTO B: `<-[:DEPENDS_ON*1..3]-`)
+- `(:Service)-[:IMPLEMENTED_IN]->(:Repository)` — Service points to its repository
+- `(:Repository)-[:CONTAINS]->(:File)` — Repository points to file
+- `(:File)-[:IMPORTS]->(:File)` — File A points to File B that it imports (To find what depends on File B: match arrows pointing INTO B: `<-[:IMPORTS]-`)
+- `(:Decision)-[:DECIDES_FOR]->(:Service)` — Decision points to the service it governs
+- `(:Decision)-[:MOTIVATED_BY]->(:Incident)` — Decision points to the incident that caused it
+- `(:Decision)-[:SUPERSEDES]->(:Decision)` — Newer decision points to older decision
+- `(:Document)-[:DOCUMENTS]->(:Service)` — Document points to service
+- `(:Incident)-[:AFFECTS]->(:Service)` & `(:Ticket)-[:AFFECTS]->(:Service)`
+- `(:Person)-[:WORKED_ON {role, period}]->(:Project)` & `(:Project)-[:USES {since}]->(:Service)`
 
-### Canonical Relationships & Direction Rules
-- `(:Person)-[:MEMBER_OF {source_id}]->(:Team)`
-- `(:Team)-[:OWNS {source_id}]->(:Service)`               # Team points to Service it owns
-- `(:Person)-[:MAINTAINS {source_id}]->(:Service)`
-- `(:Person)-[:WORKED_ON {role, period}]->(:Project)`     # Person points to Project they worked on
-- `(:Project)-[:USES {since}]->(:Service)`                # Project points to Service it uses
-- `(:Service)-[:IMPLEMENTED_IN]->(:Repository)`
-- `(:Service)-[:DEPENDS_ON]->(:Service)`                  # Dependent service points to upstream dependency
-- `(:Repository)-[:CONTAINS]->(:File)`
-- `(:File)-[:IMPORTS]->(:File)`                           # Source file points to the file it imports
-- `(:Document)-[:DOCUMENTS]->(:Service)`
-- `(:Decision)-[:DECIDES_FOR]->(:Service)`                # Decision points to Service it governs
-- `(:Decision)-[:MOTIVATED_BY]->(:Incident)`              # Decision points to Incident that caused it
-- `(:Decision)-[:SUPERSEDES]->(:Decision)`                # Newer decision points to older superseded decision
-- `(:Ticket)-[:AFFECTS]->(:Service)`
-- `(:Incident)-[:AFFECTS]->(:Service)`
-
-## 5. Technical Implementation Guardrails
-- **FalkorDB Python Client:** Use `from falkordb import FalkorDB`. Unpack `falkordb.Node` and `falkordb.Edge` objects into plain Python dicts/Pydantic models inside `graph/` before returning to callers. Serialize any `datetime` to `.isoformat()` before passing to Cypher `$props`.
-- **React Flow v12:** Package is `@xyflow/react` (NOT legacy `reactflow`). Always include `import '@xyflow/react/dist/style.css';` and pass fallback node width/height (`200`x`72`) to `@dagrejs/dagre` layout calculations.
-- **Python AST Parsing:** Always wrap `ast.parse()` in `try/except SyntaxError` and record `parse_error=str(e)` without crashing.
+## 5. Architecture & Security Rules
+- `domain/models.py` is the contract. Never pass raw dicts across module boundaries.
+- All Cypher lives in `graph/queries.py`, `graph/writer.py`, and `graph/schema.py`. Parameterized queries (`$param`) only. No LLM-generated Cypher.
+- Ingestion produces `SourceArtifact`. It never calls Cypher directly.
+- API and agent call named service/query functions. Never raw queries.
+- Frontend renders `GraphView` returned by the backend. Never hard-codes graph structure or connects to FalkorDB directly.
+- Bound graph traversal depth: max 3. Bound result size: max 100 nodes.
+- `ast.parse()` always in `try/except SyntaxError`.
+- No secrets in committed code.
 
 ## 6. Antigravity Work Style
-1. Read `AGENTS.md` and inspect existing files in your scope before proposing changes.
-2. State exact files that will be created or modified (must be within your assigned scope).
-3. Propose a brief plan and acceptance criteria. Wait for approval on nontrivial changes.
-4. Run verification checks before finishing:
-   - Backend: `cd backend && uv run ruff check && uv run pytest tests/unit/ -v`
-   - Frontend: `cd frontend && npm run build`
-5. Report exact commands run and exact terminal output. Never claim a test passed without running it.
-
-## 7. Security Rules
-- No Cypher string interpolation for values. Parameterized queries (`$param`) only.
-- Never execute analyzed repository code.
-- No secrets or API keys in committed code (only placeholders in `.env.example`).
-- Never expose a raw arbitrary Cypher execution endpoint.
+1. Read `AGENTS.md` and `docs/graph-schema.md` first.
+2. State files that will change (must be in your assigned scope).
+3. Propose plan + acceptance criterion. Wait for approval on nontrivial changes.
+4. Run checks: `cd backend && uv run ruff check && uv run pytest tests/unit/ -v`
+5. Report exact commands and exact output. Never claim a test passed without running it.
