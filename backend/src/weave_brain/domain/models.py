@@ -1,8 +1,10 @@
 from __future__ import annotations
-from pydantic import BaseModel
-from typing import Optional, Literal, Any, Union
-from datetime import datetime
+
 import uuid
+from datetime import UTC, datetime
+from typing import Any, Literal
+
+from pydantic import BaseModel, Field
 
 EntityType = Literal[
     "person",
@@ -44,7 +46,7 @@ class GraphView(BaseModel):
     root_node_ids: list[str] = []
     highlighted_path_ids: list[str] = []
     truncated: bool = False
-    warning: Optional[str] = None
+    warning: str | None = None
 
 
 # Evidence
@@ -52,27 +54,27 @@ class EvidenceItem(BaseModel):
     source_id: str
     title: str
     source_type: str
-    excerpt: Optional[str] = None
-    source_url: Optional[str] = None
+    excerpt: str | None = None
+    source_url: str | None = None
     relationship_path: list[str] = []  # list of node IDs
 
 
 # Chat API
 class ChatRequest(BaseModel):
     question: str
-    conversation_id: Optional[str] = None
+    conversation_id: str | None = None
 
 
 class ChatResponse(BaseModel):
     message_id: str = ""
     answer: str
     evidence: list[EvidenceItem] = []
-    graph: Optional[GraphView] = None
+    graph: GraphView | None = None
     highlighted_paths: list[list[str]] = []
     related_entities: list[GraphNode] = []
     suggested_followups: list[str] = []  # Added in Section 21 (Page 65) for Dev D
     warnings: list[str] = []
-    intent: Optional[str] = None
+    intent: str | None = None
 
     def __init__(self, **data: Any):
         if not data.get("message_id"):
@@ -82,7 +84,7 @@ class ChatResponse(BaseModel):
 
 # Ingestion
 # Supports (rel_type, target_canonical_id) or (rel_type, target_canonical_id, edge_props)
-RelationshipEdge = Union[tuple[str, str], tuple[str, str, dict[str, Any]]]
+RelationshipEdge = tuple[str, str] | tuple[str, str, dict[str, Any]]
 
 
 class SourceArtifact(BaseModel):
@@ -95,10 +97,12 @@ class SourceArtifact(BaseModel):
     relationships: list[RelationshipEdge] = (
         []
     )  # (rel_type, target_canonical_id[, props])
-    source_url: Optional[str] = None
-    content_hash: Optional[str] = None
-    source_updated_at: Optional[datetime] = None
-    ingested_at: datetime = datetime.utcnow()
+    source_url: str | None = None
+    content_hash: str | None = None
+    source_updated_at: datetime | None = None
+    ingested_at: datetime = Field(
+        default_factory=lambda: datetime.now(UTC)
+    )
 
 
 class SyncReport(BaseModel):
@@ -121,5 +125,25 @@ class OnboardingBrief(BaseModel):
     change_risks: list[str] = []
     open_incidents: list[GraphNode] = []
     related_tickets: list[GraphNode] = []
-    graph: Optional[GraphView] = None
+    graph: GraphView | None = None
     warnings: list[str] = []
+
+
+class KnowledgeGap(BaseModel):
+    entity_id: str
+    entity_title: str
+    gap_type: Literal["no_owner", "missing_rationale", "undocumented"]
+
+
+class HealthDimension(BaseModel):
+    label: str
+    score: float
+    current: int
+    total: int
+    status: Literal["good", "warning", "critical"]
+
+
+class HealthScore(BaseModel):
+    dimensions: list[HealthDimension]
+    overall: float
+    gaps: list[KnowledgeGap] = []

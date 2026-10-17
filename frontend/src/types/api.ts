@@ -68,3 +68,23 @@ export interface OnboardingBrief {
   graph?: GraphView;
   warnings: string[];
 }
+
+export interface KnowledgeGap {
+  entity_id: string;
+  entity_title: string;
+  gap_type: 'no_owner' | 'missing_rationale' | 'undocumented';
+}
+
+export interface HealthDimension {
+  label: string;
+  score: number;
+  current: number;
+  total: number;
+  status: 'good' | 'warning' | 'critical';
+}
+
+export interface HealthScore {
+  dimensions: HealthDimension[];
+  overall: number;
+  gaps: KnowledgeGap[];
+}
