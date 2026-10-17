@@ -5,9 +5,11 @@
     "entity_type": "team",
     "canonical_id": "team:platform-engineering",
     "title": "Platform Engineering",
+    "ingested_at": "2026-10-01T08:00:00Z",
     "properties": {
       "description": "Core infrastructure, identity platforms, and platform reliability",
-      "slack_channel": "#platform-eng"
+      "slack_channel": "#platform-eng",
+      "last_updated": "2026-10-01"
     },
     "relationships": [
       ["OWNS", "service:authentication-api"],
@@ -20,9 +22,11 @@
     "entity_type": "team",
     "canonical_id": "team:backend-core",
     "title": "Backend Core",
+    "ingested_at": "2026-08-15T09:00:00Z",
     "properties": {
       "description": "Core domain business logic and user profile microservices",
-      "slack_channel": "#backend"
+      "slack_channel": "#backend",
+      "last_updated": "2026-08-15"
     },
     "relationships": [
       ["OWNS", "service:user-profile-api"]
@@ -34,9 +38,11 @@
     "entity_type": "team",
     "canonical_id": "team:data-infra",
     "title": "Data Infra",
+    "ingested_at": "2026-05-01T09:00:00Z",
     "properties": {
       "description": "Data infrastructure, streaming pipelines, and analytical stores",
-      "slack_channel": "#data-infra"
+      "slack_channel": "#data-infra",
+      "last_updated": "2026-05-01"
     },
     "relationships": []
   },
@@ -46,10 +52,12 @@
     "entity_type": "person",
     "canonical_id": "person:priya-sharma",
     "title": "Priya Sharma",
+    "ingested_at": "2026-10-01T10:00:00Z",
     "properties": {
       "role": "Lead",
       "email": "priya@acme.internal",
-      "slug": "priya-sharma"
+      "slug": "priya-sharma",
+      "last_updated": "2026-10-01"
     },
     "relationships": [
       ["MEMBER_OF", "team:platform-engineering"],
@@ -62,10 +70,12 @@
     "entity_type": "person",
     "canonical_id": "person:james-chen",
     "title": "James Chen",
+    "ingested_at": "2026-10-01T10:00:00Z",
     "properties": {
       "role": "Senior Engineer",
       "email": "james@acme.internal",
-      "slug": "james-chen"
+      "slug": "james-chen",
+      "last_updated": "2026-10-01"
     },
     "relationships": [
       ["MEMBER_OF", "team:platform-engineering"],
@@ -78,10 +88,12 @@
     "entity_type": "person",
     "canonical_id": "person:aisha-kowalski",
     "title": "Aisha Kowalski",
+    "ingested_at": "2026-08-20T10:00:00Z",
     "properties": {
       "role": "Engineer",
       "email": "aisha@acme.internal",
-      "slug": "aisha-kowalski"
+      "slug": "aisha-kowalski",
+      "last_updated": "2026-08-20"
     },
     "relationships": [
       ["MEMBER_OF", "team:backend-core"]
@@ -93,10 +105,12 @@
     "entity_type": "person",
     "canonical_id": "person:dev-four",
     "title": "Dev Four",
+    "ingested_at": "2026-05-15T12:00:00Z",
     "properties": {
       "role": "Engineer",
       "email": "dev-four@acme.internal",
-      "slug": "dev-four"
+      "slug": "dev-four",
+      "last_updated": "2026-05-15"
     },
     "relationships": [
       ["MEMBER_OF", "team:data-infra"]

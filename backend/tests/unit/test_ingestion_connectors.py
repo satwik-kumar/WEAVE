@@ -157,7 +157,7 @@ def test_parse_markdown_file_not_found():
 # 3. Python Repository AST Parser Tests
 # ==============================================================================
 
-def test_parse_python_file_ast_and_imports(tmp_path: Path):
+def test_python_parser_file_ast_and_imports(tmp_path: Path):
     """Verify AST parsing extracts internal module imports adhering to (:File)-[:IMPORTS]->(:File)."""
     src_dir = tmp_path / "src" / "pkg"
     src_dir.mkdir(parents=True)
@@ -193,7 +193,7 @@ def run():
     assert ("IMPORTS", "file:acme/test-app:src/pkg/utils.py") in artifact.relationships
 
 
-def test_parse_python_file_syntax_error_handling(tmp_path: Path):
+def test_python_parser_file_syntax_error_handling(tmp_path: Path):
     """Verify ast.parse catches SyntaxError, sets properties['parse_error'], and does not crash."""
     broken_file = tmp_path / "broken.py"
     broken_file.write_text("def broken_func(\n    # Missing closing paren\n", encoding="utf-8")
@@ -211,7 +211,7 @@ def test_parse_python_file_syntax_error_handling(tmp_path: Path):
     assert artifact.relationships == []
 
 
-def test_parse_python_repository_contains_and_test_detection(tmp_path: Path):
+def test_python_parser_repository_contains_and_test_detection(tmp_path: Path):
     """Verify parse_python_repository builds (:Repository)-[:CONTAINS]->(:File) and flags test files."""
     src_dir = tmp_path / "src"
     tests_dir = tmp_path / "tests"
@@ -248,3 +248,41 @@ def test_parse_python_repository_contains_and_test_detection(tmp_path: Path):
     file_map = {a.canonical_id: a for a in artifacts[1:]}
     assert file_map["file:acme/sample-repo:src/app.py"].properties["is_test"] is False
     assert file_map["file:acme/sample-repo:tests/test_app.py"].properties["is_test"] is True
+
+
+def test_python_parser_malformed_file_resilience(tmp_path: Path):
+    """Verify parse_python_repository continues without crashing when malformed files exist, setting parse_error."""
+    src_dir = tmp_path / "src"
+    src_dir.mkdir()
+
+    valid_py = src_dir / "valid.py"
+    valid_py.write_text("def ok():\n    return 1\n", encoding="utf-8")
+
+    broken_py = src_dir / "broken.py"
+    broken_py.write_text("def broken_syntax(:\n", encoding="utf-8")
+
+    artifacts = parse_python_repository(
+        repo_path=tmp_path,
+        repo_slug="acme/resilience-repo",
+    )
+
+    # 1 Repo + 2 Files
+    assert len(artifacts) == 3
+    file_map = {a.canonical_id: a for a in artifacts if a.entity_type == "file"}
+
+    valid_artifact = file_map["file:acme/resilience-repo:src/valid.py"]
+    assert "parse_error" not in valid_artifact.properties
+    assert valid_artifact.properties["is_test"] is False
+
+    broken_artifact = file_map["file:acme/resilience-repo:src/broken.py"]
+    assert "parse_error" in broken_artifact.properties
+    assert broken_artifact.properties["parse_error"] is not None
+    assert broken_artifact.properties["is_test"] is False
+
+
+# Backward-compatibility aliases
+test_parse_python_file_ast_and_imports = test_python_parser_file_ast_and_imports
+test_parse_python_file_syntax_error_handling = test_python_parser_file_syntax_error_handling
+test_parse_python_repository_contains_and_test_detection = (
+    test_python_parser_repository_contains_and_test_detection
+)

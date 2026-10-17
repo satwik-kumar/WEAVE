@@ -1,7 +1,11 @@
-"""Verification script for WEAVE demo graph paths (Developer A).
+"""Verification script for WEAVE demo graph paths, freshness, gaps, and integrity.
 
-Validates that the demo data in data/demo/ covers all five core demo paths for
-service:authentication-api without requiring a running FalkorDB database.
+Validates:
+1. Absence of duplicate canonical IDs across all JSON files.
+2. Freshness spread (fresh <30d, aging 30-90d, stale >90d) relative to Oct 18, 2026.
+3. Deliberate knowledge gaps (unowned service, missing rationale, undocumented service).
+4. Supersession linkage (adr-003 SUPERSEDES adr-002).
+5. Five core demo graph traversal paths for service:authentication-api.
 """
 
 from __future__ import annotations
@@ -9,20 +13,30 @@ from __future__ import annotations
 import json
 import sys
 from collections import deque
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEMO_DIR = REPO_ROOT / "data" / "demo"
 AUTH_SERVICE_ID = "service:authentication-api"
+BENCHMARK_DATE = datetime(2026, 10, 18, 0, 0, 0, tzinfo=UTC)
 
 
-def load_demo_entities(demo_dir: Path = DEMO_DIR) -> dict[str, dict[str, Any]]:
-    """Load all JSON files from demo_dir into a canonical_id -> entity dict."""
+def load_demo_entities(
+    demo_dir: Path = DEMO_DIR,
+) -> tuple[dict[str, dict[str, Any]], dict[str, list[str]]]:
+    """Load all JSON files from demo_dir into a canonical_id -> entity dict.
+
+    Also tracks duplicate IDs across files.
+    Returns (entities_dict, duplicate_id_map).
+    """
     entities: dict[str, dict[str, Any]] = {}
+    seen_ids: dict[str, list[str]] = {}
+
     if not demo_dir.is_dir():
         print(f"[ERROR] Demo directory does not exist: {demo_dir}")
-        return entities
+        return entities, {}
 
     for json_file in sorted(demo_dir.glob("*.json")):
         try:
@@ -33,27 +47,92 @@ def load_demo_entities(demo_dir: Path = DEMO_DIR) -> dict[str, dict[str, Any]]:
             for r in records:
                 cid = r.get("canonical_id")
                 if cid:
+                    seen_ids.setdefault(cid, []).append(json_file.name)
                     entities[cid] = r
         except (json.JSONDecodeError, OSError) as e:
             print(f"[WARN] Failed to read {json_file.name}: {e}")
 
-    return entities
+    duplicate_ids = {cid: files for cid, files in seen_ids.items() if len(files) > 1}
+    return entities, duplicate_ids
+
+
+def parse_timestamp(entity: dict[str, Any]) -> datetime | None:
+    """Parse ingested_at or last_updated from entity."""
+    val = entity.get("ingested_at") or entity.get("properties", {}).get("last_updated")
+    if not val:
+        return None
+    if isinstance(val, str):
+        try:
+            clean = val.replace("Z", "+00:00")
+            if len(clean) == 10:  # YYYY-MM-DD
+                dt = datetime.fromisoformat(f"{clean}T00:00:00+00:00")
+            else:
+                dt = datetime.fromisoformat(clean)
+            if dt.tzinfo is None:
+                return dt.replace(tzinfo=UTC)
+            return dt.astimezone(UTC)
+        except (ValueError, TypeError):
+            return None
+    return None
 
 
 def verify_demo_paths(demo_dir: Path = DEMO_DIR) -> tuple[bool, dict[str, bool]]:
-    """Verify all 5 demo question graph paths for service:authentication-api."""
-    entities = load_demo_entities(demo_dir)
+    """Run full verification on demo data integrity, freshness, gaps, and paths."""
+    entities, duplicate_ids = load_demo_entities(demo_dir)
     results: dict[str, bool] = {}
 
     print("=" * 65)
-    print(" WEAVE Brain - Demo Data Graph Path Coverage Verification")
-    print(f" Target Service: {AUTH_SERVICE_ID}")
-    print(f" Loaded Entities: {len(entities)}")
+    print(" WEAVE Brain - Demo Data Integrity & Path Verification (A-R2)")
+    print(f" Target Service:   {AUTH_SERVICE_ID}")
+    print(f" Loaded Entities:  {len(entities)}")
+    print(f" Benchmark Date:   {BENCHMARK_DATE.strftime('%Y-%m-%d')}")
     print("=" * 65)
 
-    # Index relationships
-    # outgoing: src -> list of (rel_type, target_id)
-    # incoming: tgt -> list of (rel_type, source_id)
+    # --------------------------------------------------------------------------
+    # Integrity Check: Duplicate IDs across all JSON files
+    # --------------------------------------------------------------------------
+    has_no_duplicates = len(duplicate_ids) == 0
+    results["Duplicate ID Check"] = has_no_duplicates
+    status_dup = "[PASS]" if has_no_duplicates else "[FAIL]"
+    print(f" {status_dup} Duplicate ID Check (across all demo JSON files)")
+    if not has_no_duplicates:
+        for cid, files in duplicate_ids.items():
+            print(f"        -> Duplicate '{cid}' found in: {files}")
+    else:
+        print("        0 duplicates found across all JSON files.")
+
+    # --------------------------------------------------------------------------
+    # Freshness Spread Analysis (<30d, 30-90d, >90d)
+    # --------------------------------------------------------------------------
+    fresh_nodes: list[str] = []
+    aging_nodes: list[str] = []
+    stale_nodes: list[str] = []
+    untracked_nodes: list[str] = []
+
+    for cid, entity in entities.items():
+        dt = parse_timestamp(entity)
+        if dt is None:
+            untracked_nodes.append(cid)
+            continue
+        age_days = (BENCHMARK_DATE - dt).days
+        if age_days < 30:
+            fresh_nodes.append(cid)
+        elif age_days <= 90:
+            aging_nodes.append(cid)
+        else:
+            stale_nodes.append(cid)
+
+    freshness_ok = len(fresh_nodes) > 0 and len(aging_nodes) > 0 and len(stale_nodes) > 0
+    results["Freshness Spread"] = freshness_ok
+    status_fresh = "[PASS]" if freshness_ok else "[FAIL]"
+    print(f" {status_fresh} Freshness Spread (relative to {BENCHMARK_DATE.strftime('%Y-%m-%d')})")
+    print(f"        Fresh (<30d):  {len(fresh_nodes)} nodes (e.g., {fresh_nodes[:3]})")
+    print(f"        Aging (30-90d): {len(aging_nodes)} nodes (e.g., {aging_nodes[:3]})")
+    print(f"        Stale (>90d):  {len(stale_nodes)} nodes (e.g., {stale_nodes[:3]})")
+
+    # --------------------------------------------------------------------------
+    # Build Relationship Graph Index
+    # --------------------------------------------------------------------------
     outgoing: dict[str, list[tuple[str, str]]] = {cid: [] for cid in entities}
     incoming: dict[str, list[tuple[str, str]]] = {cid: [] for cid in entities}
 
@@ -69,9 +148,51 @@ def verify_demo_paths(demo_dir: Path = DEMO_DIR) -> tuple[bool, dict[str, bool]]
                 incoming[target_id].append((rel_type, cid))
 
     # --------------------------------------------------------------------------
-    # Path 1 (Service Overview):
-    # At least one team OWNS service:authentication-api,
-    # AND service:authentication-api is IMPLEMENTED_IN a repository.
+    # Deliberate Knowledge Gaps Verification
+    # --------------------------------------------------------------------------
+    # Gap 1: service:data-pipeline has NO owner
+    pipeline_owners = [
+        src for rel, src in incoming.get("service:data-pipeline", [])
+        if rel == "OWNS" and entities.get(src, {}).get("entity_type") == "team"
+    ]
+    gap1_ok = len(pipeline_owners) == 0
+
+    # Gap 2: decision:adr-002 has empty rationale
+    adr2_entity = entities.get("decision:adr-002", {})
+    adr2_rationale = adr2_entity.get("properties", {}).get("rationale")
+    gap2_ok = adr2_rationale == ""
+
+    # Gap 3: At least one service has NO linked document
+    all_services = [cid for cid, e in entities.items() if e.get("entity_type") == "service"]
+    undocumented_services = [
+        sid for sid in all_services
+        if not any(rel == "DOCUMENTS" for rel, _ in incoming.get(sid, []))
+    ]
+    gap3_ok = len(undocumented_services) >= 1
+
+    gaps_ok = gap1_ok and gap2_ok and gap3_ok
+    results["Deliberate Knowledge Gaps"] = gaps_ok
+    status_gaps = "[PASS]" if gaps_ok else "[FAIL]"
+    print(f" {status_gaps} Deliberate Knowledge Gaps")
+    print(f"        Gap 1 (Unowned Service):    service:data-pipeline (owners={pipeline_owners})")
+    print(f"        Gap 2 (Missing Rationale):  decision:adr-002 (rationale={adr2_rationale!r})")
+    print(f"        Gap 3 (Undocumented):       {undocumented_services}")
+
+    # --------------------------------------------------------------------------
+    # Supersession Linkage Verification (adr-003 SUPERSEDES adr-002)
+    # --------------------------------------------------------------------------
+    supersedes_targets = [
+        tgt for rel, tgt in outgoing.get("decision:adr-003", [])
+        if rel == "SUPERSEDES"
+    ]
+    supersession_ok = "decision:adr-002" in supersedes_targets
+    results["Decision Supersession"] = supersession_ok
+    status_sup = "[PASS]" if supersession_ok else "[FAIL]"
+    print(f" {status_sup} Decision Supersession (decision:adr-003 -> decision:adr-002)")
+    print(f"        Supersedes Target(s): {supersedes_targets}")
+
+    # --------------------------------------------------------------------------
+    # Path 1 (Service Overview)
     # --------------------------------------------------------------------------
     owning_teams = [
         src for rel, src in incoming.get(AUTH_SERVICE_ID, [])
@@ -83,19 +204,14 @@ def verify_demo_paths(demo_dir: Path = DEMO_DIR) -> tuple[bool, dict[str, bool]]
     ]
     path1_ok = len(owning_teams) >= 1 and len(repos) >= 1
     results["Path 1 (Service Overview)"] = path1_ok
-
-    status1 = "[PASS]" if path1_ok else "[FAIL]"
-    print(f" {status1} Path 1: Service Overview")
-    print(f"        Owning Team(s): {owning_teams or 'NONE'}")
-    print(f"        Repository:     {repos or 'NONE'}")
+    print(f" {'[PASS]' if path1_ok else '[FAIL]'} Path 1: Service Overview")
+    print(f"        Owning Team(s): {owning_teams} | Repository: {repos}")
 
     # --------------------------------------------------------------------------
-    # Path 2 (Decision Rationale):
-    # At least one decision DECIDES_FOR service:authentication-api
-    # AND is MOTIVATED_BY an incident.
+    # Path 2 (Decision Rationale)
     # --------------------------------------------------------------------------
     qualifying_decisions = []
-    for rel, src in incoming.get(AUTH_SERVICE_ID, []) if AUTH_SERVICE_ID in incoming else []:
+    for rel, src in incoming.get(AUTH_SERVICE_ID, []):
         if rel == "DECIDES_FOR" and entities.get(src, {}).get("entity_type") == "decision":
             motivated_incidents = [
                 tgt for r_rel, tgt in outgoing.get(src, [])
@@ -106,21 +222,13 @@ def verify_demo_paths(demo_dir: Path = DEMO_DIR) -> tuple[bool, dict[str, bool]]
 
     path2_ok = len(qualifying_decisions) >= 1
     results["Path 2 (Decision Rationale)"] = path2_ok
-
-    status2 = "[PASS]" if path2_ok else "[FAIL]"
-    print(f" {status2} Path 2: Decision Rationale & Motivation")
-    if qualifying_decisions:
-        for dec, incs in qualifying_decisions:
-            print(f"        Decision: {dec} -> MOTIVATED_BY: {incs}")
-    else:
-        print("        No decision DECIDES_FOR auth-api that is MOTIVATED_BY an incident.")
+    print(f" {'[PASS]' if path2_ok else '[FAIL]'} Path 2: Decision Rationale")
+    print(f"        Decisions & Incidents: {qualifying_decisions}")
 
     # --------------------------------------------------------------------------
-    # Path 3 (Blast Radius):
-    # Services DEPENDS_ON service:authentication-api (transitively up to 3 hops),
-    # and those dependent services are owned (OWNS) across >= 2 distinct teams.
+    # Path 3 (Blast Radius)
     # --------------------------------------------------------------------------
-    dependent_services: dict[str, int] = {}  # service_id -> hop count
+    dependent_services: dict[str, int] = {}
     queue: deque[tuple[str, int]] = deque([(AUTH_SERVICE_ID, 0)])
     visited = {AUTH_SERVICE_ID}
 
@@ -147,15 +255,11 @@ def verify_demo_paths(demo_dir: Path = DEMO_DIR) -> tuple[bool, dict[str, bool]]
     distinct_blast_teams = list(blast_owning_teams.keys())
     path3_ok = len(dependent_services) >= 1 and len(distinct_blast_teams) >= 2
     results["Path 3 (Blast Radius)"] = path3_ok
-
-    status3 = "[PASS]" if path3_ok else "[FAIL]"
-    print(f" {status3} Path 3: Blast Radius (Transitive Dependents & Diverse Owners)")
-    print(f"        Transitive Dependents: {dependent_services or 'NONE'}")
-    print(f"        Owning Teams ({len(distinct_blast_teams)}): {distinct_blast_teams or 'NONE'}")
+    print(f" {'[PASS]' if path3_ok else '[FAIL]'} Path 3: Blast Radius (Diverse Owners)")
+    print(f"        Dependents: {dependent_services} | Owning Teams ({len(distinct_blast_teams)}): {distinct_blast_teams}")
 
     # --------------------------------------------------------------------------
-    # Path 4 (Expert Finder):
-    # At least 2 distinct person entities have WORKED_ON a project that USES auth-api.
+    # Path 4 (Expert Finder)
     # --------------------------------------------------------------------------
     using_projects = [
         src for rel, src in incoming.get(AUTH_SERVICE_ID, [])
@@ -169,16 +273,11 @@ def verify_demo_paths(demo_dir: Path = DEMO_DIR) -> tuple[bool, dict[str, bool]]
 
     path4_ok = len(experts) >= 2
     results["Path 4 (Expert Finder)"] = path4_ok
-
-    status4 = "[PASS]" if path4_ok else "[FAIL]"
-    print(f" {status4} Path 4: Expert Discovery (Person -> Project -> Service)")
-    print(f"        Using Project(s): {using_projects or 'NONE'}")
-    print(f"        Found Experts ({len(experts)}): {sorted(experts) if experts else 'NONE'}")
+    print(f" {'[PASS]' if path4_ok else '[FAIL]'} Path 4: Expert Discovery")
+    print(f"        Using Projects: {using_projects} | Experts ({len(experts)}): {sorted(experts)}")
 
     # --------------------------------------------------------------------------
-    # Path 5 (Onboarding / Active Risk):
-    # At least one open incident (status == 'open' or non-resolved)
-    # AND at least one ticket AFFECTS service:authentication-api.
+    # Path 5 (Onboarding / Active Risk)
     # --------------------------------------------------------------------------
     affects_incidents = [
         src for rel, src in incoming.get(AUTH_SERVICE_ID, [])
@@ -195,12 +294,8 @@ def verify_demo_paths(demo_dir: Path = DEMO_DIR) -> tuple[bool, dict[str, bool]]
 
     path5_ok = len(open_incidents) >= 1 and len(affects_tickets) >= 1
     results["Path 5 (Onboarding / Active Risk)"] = path5_ok
-
-    status5 = "[PASS]" if path5_ok else "[FAIL]"
-    print(f" {status5} Path 5: Onboarding & Active Risk (Open Incidents & Tickets)")
-    print(f"        All Affecting Incidents:  {affects_incidents or 'NONE'}")
-    print(f"        Open Incident(s):         {open_incidents or 'NONE (FAILED: incident:inc-007 is resolved)'}")
-    print(f"        Affecting Ticket(s):      {affects_tickets or 'NONE'}")
+    print(f" {'[PASS]' if path5_ok else '[FAIL]'} Path 5: Onboarding & Active Risk")
+    print(f"        Open Incident(s): {open_incidents} | Affecting Ticket(s): {affects_tickets}")
 
     # --------------------------------------------------------------------------
     # Summary
@@ -208,10 +303,10 @@ def verify_demo_paths(demo_dir: Path = DEMO_DIR) -> tuple[bool, dict[str, bool]]
     all_passed = all(results.values())
     print("=" * 65)
     if all_passed:
-        print(" RESULT: ALL 5 DEMO PATH CHECKS PASSED")
+        print(" RESULT: ALL INTEGRITY, FRESHNESS, GAP & PATH CHECKS PASSED")
     else:
-        failed_paths = [p for p, ok in results.items() if not ok]
-        print(f" RESULT: {len(failed_paths)}/5 PATH CHECKS FAILED: {', '.join(failed_paths)}")
+        failed_checks = [k for k, ok in results.items() if not ok]
+        print(f" RESULT: {len(failed_checks)} CHECKS FAILED: {', '.join(failed_checks)}")
     print("=" * 65)
 
     return all_passed, results

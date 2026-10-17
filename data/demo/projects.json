@@ -5,9 +5,11 @@
     "entity_type": "project",
     "canonical_id": "project:auth-modernization",
     "title": "Auth Modernization",
+    "ingested_at": "2026-08-10T08:30:00Z",
     "properties": {
       "description": "OAuth2 and JWT token architecture modernization initiative",
-      "status": "active"
+      "status": "active",
+      "last_updated": "2026-08-10"
     },
     "relationships": [
       ["USES", "service:authentication-api", {"since": "2025-10-01"}]

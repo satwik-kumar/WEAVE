@@ -5,10 +5,12 @@
     "entity_type": "decision",
     "canonical_id": "decision:adr-001",
     "title": "Token expiry 24h policy",
+    "ingested_at": "2025-11-15T10:00:00Z",
     "properties": {
       "status": "accepted",
       "decision_date": "2025-11-15",
-      "rationale": "Mitigate risk of stolen long-lived tokens following incident INC-007"
+      "rationale": "Mitigate risk of stolen long-lived tokens following incident INC-007",
+      "last_updated": "2025-11-15"
     },
     "relationships": [
       ["DECIDES_FOR", "service:authentication-api"],
@@ -21,10 +23,12 @@
     "entity_type": "decision",
     "canonical_id": "decision:adr-002",
     "title": "Service mesh adoption",
+    "ingested_at": "2025-06-01T09:00:00Z",
     "properties": {
       "status": "superseded",
       "decision_date": "2025-06-01",
-      "rationale": ""
+      "rationale": "",
+      "last_updated": "2025-06-01"
     },
     "relationships": [
       ["DECIDES_FOR", "service:authentication-api"]
@@ -36,10 +40,12 @@
     "entity_type": "decision",
     "canonical_id": "decision:adr-003",
     "title": "Envoy proxy standard",
+    "ingested_at": "2026-01-20T14:00:00Z",
     "properties": {
       "status": "accepted",
       "decision_date": "2026-01-20",
-      "rationale": "Standardize Envoy sidecars for service-to-service mTLS and observability"
+      "rationale": "Standardize Envoy sidecars for service-to-service mTLS and observability",
+      "last_updated": "2026-01-20"
     },
     "relationships": [
       ["DECIDES_FOR", "service:authentication-api"],

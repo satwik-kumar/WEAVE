@@ -1,4 +1,4 @@
-"""Unit tests for seed_demo and reset_demo scripts using MockGraph."""
+"""Unit tests for seed_demo and reset_demo scripts using MockGraph and idempotency verification."""
 
 from __future__ import annotations
 
@@ -60,6 +60,47 @@ class MockGraph:
         self.deleted = True
 
 
+class StatefulMockGraph:
+    """Stateful mock graph tracking nodes and edges to verify 100% idempotency across seed runs."""
+
+    def __init__(self) -> None:
+        self.nodes: set[str] = set()
+        self.edges: set[tuple[str, str, str]] = set()
+        self.executed_queries: list[tuple[str, dict[str, Any] | None]] = []
+        self.deleted = False
+
+    def query(
+        self, cypher: str, params: dict[str, Any] | None = None
+    ) -> MockQueryResult:
+        self.executed_queries.append((cypher, params))
+        if cypher == "CALL db.indexes()":
+            return MockQueryResult(header=[[1, "label"], [1, "properties"]], result_set=[])
+        if cypher.startswith("CREATE INDEX"):
+            return MockQueryResult()
+        if cypher.startswith("MERGE (n:"):
+            nid = params.get("props", {}).get("id") if params else None
+            if nid and nid not in self.nodes:
+                self.nodes.add(nid)
+                return MockQueryResult(nodes_created=1, relationships_created=0)
+            return MockQueryResult(nodes_created=0, relationships_created=0)
+        if cypher.startswith("MATCH ("):
+            src_id = (params.get("src_id") or params.get("sid")) if params else None
+            tgt_id = (params.get("tgt_id") or params.get("tid")) if params else None
+            if src_id and tgt_id:
+                edge_key = (str(src_id), cypher, str(tgt_id))
+                if edge_key not in self.edges:
+                    self.edges.add(edge_key)
+                    return MockQueryResult(result_set=[["type"]], nodes_created=0, relationships_created=1)
+                return MockQueryResult(result_set=[["type"]], nodes_created=0, relationships_created=0)
+            return MockQueryResult(result_set=[["type"]], nodes_created=0, relationships_created=1)
+        return MockQueryResult()
+
+    def delete(self) -> None:
+        self.nodes.clear()
+        self.edges.clear()
+        self.deleted = True
+
+
 def test_run_seed_with_mock_graph():
     """Verify run_seed initializes schema, loads all 19 artifacts, and returns clean SyncReport."""
     mock_graph = MockGraph()
@@ -88,3 +129,36 @@ def test_run_reset_clears_and_reseeds():
     assert isinstance(report, SyncReport)
     assert report.records_processed == 19
     assert len(report.errors) == 0
+
+
+def test_run_seed_idempotency_two_runs_identical_counts():
+    """Verify run_seed executed twice produces 100% identical node/edge counts (idempotency)."""
+    graph = StatefulMockGraph()
+
+    # First run: initial insertion
+    report1 = run_seed(data_dir=DEFAULT_DEMO_DIR, graph=graph)
+    nodes_run1 = len(graph.nodes)
+    edges_run1 = len(graph.edges)
+
+    assert report1.records_processed == 19
+    assert report1.nodes_created == 19
+    assert report1.nodes_updated == 0
+    assert report1.edges_created == 21
+    assert len(report1.errors) == 0
+    assert nodes_run1 == 19
+    assert edges_run1 == 21
+
+    # Second run: identical re-run against existing graph state
+    report2 = run_seed(data_dir=DEFAULT_DEMO_DIR, graph=graph)
+    nodes_run2 = len(graph.nodes)
+    edges_run2 = len(graph.edges)
+
+    assert report2.records_processed == 19
+    assert report2.nodes_created == 0
+    assert report2.nodes_updated == 19
+    assert report2.edges_created == 0
+    assert len(report2.errors) == 0
+
+    # Graph node and edge counts must remain 100% identical
+    assert nodes_run1 == nodes_run2 == 19
+    assert edges_run1 == edges_run2 == 21

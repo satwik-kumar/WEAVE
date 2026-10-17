@@ -5,11 +5,13 @@
     "entity_type": "service",
     "canonical_id": "service:authentication-api",
     "title": "Authentication API",
+    "ingested_at": "2026-10-15T09:00:00Z",
     "properties": {
       "description": "Core authentication and JWT token issuance service",
       "status": "production",
       "language": "Python",
-      "tech_stack": "FastAPI, Redis"
+      "tech_stack": "FastAPI, Redis",
+      "last_updated": "2026-10-15"
     },
     "relationships": [
       ["IMPLEMENTED_IN", "repository:acme/auth-api"]
@@ -21,11 +23,13 @@
     "entity_type": "service",
     "canonical_id": "service:user-profile-api",
     "title": "User Profile API",
+    "ingested_at": "2026-08-25T11:00:00Z",
     "properties": {
       "description": "User profiles, preferences, and organization membership service",
       "status": "production",
       "language": "Python",
-      "tech_stack": "FastAPI, PostgreSQL"
+      "tech_stack": "FastAPI, PostgreSQL",
+      "last_updated": "2026-08-25"
     },
     "relationships": [
       ["DEPENDS_ON", "service:authentication-api"]
@@ -37,11 +41,13 @@
     "entity_type": "service",
     "canonical_id": "service:notification-service",
     "title": "Notification Service",
+    "ingested_at": "2026-09-02T16:00:00Z",
     "properties": {
       "description": "Multi-channel notification dispatch and email queue service",
       "status": "production",
       "language": "Go",
-      "tech_stack": "gRPC, Kafka"
+      "tech_stack": "gRPC, Kafka",
+      "last_updated": "2026-09-02"
     },
     "relationships": [
       ["DEPENDS_ON", "service:authentication-api"]
@@ -53,11 +59,13 @@
     "entity_type": "service",
     "canonical_id": "service:data-pipeline",
     "title": "Data Pipeline",
+    "ingested_at": "2026-04-10T10:00:00Z",
     "properties": {
       "description": "Event streaming and analytical data pipeline",
       "status": "active",
       "language": "Python",
-      "tech_stack": "Spark, Dataproc"
+      "tech_stack": "Spark, Dataproc",
+      "last_updated": "2026-04-10"
     },
     "relationships": []
   }
