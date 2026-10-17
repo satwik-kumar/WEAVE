@@ -1,5 +1,5 @@
 [project]
-name = "backend"
+name = "weave_brain"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -27,3 +27,4 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.17.1",
 ]
+

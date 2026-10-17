@@ -1,0 +1,44 @@
+:root {
+  --fresh: #10b981;
+  --aging: #f59e0b;
+  --stale: #ef4444;
+
+  --bg-surface: #ffffff;
+  --bg-elevated: #f3f4f6;
+  --border: #e5e4e7;
+
+  --text-primary: #08060d;
+  --text-secondary: #6b6375;
+  --text-muted: #9ca3af;
+  --text-code: #aa3bff;
+
+  /* Entity colors */
+  --c-person: #3b82f6;
+  --c-decision: #8b5cf6;
+  --c-service: #10b981;
+  --c-team: #f59e0b;
+  --c-incident: #ef4444;
+
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-2x1: 1.5rem; /* Fallback for typographical alias */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-surface: #1f2028;
+    --bg-elevated: #2e303a;
+    --border: #2e303a;
+
+    --text-primary: #f3f4f6;
+    --text-secondary: #9ca3af;
+    --text-code: #c084fc;
+  }
+}
