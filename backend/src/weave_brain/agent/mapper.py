@@ -67,6 +67,20 @@ def tool_result_to_graph_view(
     if not isinstance(result, dict):
         return GraphView(nodes=[], edges=[])
 
+    # Pre-formed graph dict or GraphView in result
+    if "graph" in result:
+        graph_obj = result["graph"]
+        if isinstance(graph_obj, GraphView):
+            for n in graph_obj.nodes:
+                add({"id": n.id, "type": n.type, "title": n.title, **n.properties})
+            edges.extend(e for e in graph_obj.edges if e.id not in {ex.id for ex in edges})
+        elif isinstance(graph_obj, dict):
+            for n in graph_obj.get("nodes", []):
+                add(n)
+            for e in graph_obj.get("edges", []):
+                if isinstance(e, dict):
+                    edge(e.get("source_id", ""), e.get("relationship_type", ""), e.get("target_id", ""))
+
     # service overview shape
     svc = result.get("service")
     if svc:
@@ -90,6 +104,10 @@ def tool_result_to_graph_view(
                 edge(dep.get("id", ""), "DEPENDS_ON", svc["id"])
 
     # blast radius shape
+    target_sid = result.get("service_id")
+    if target_sid:
+        add({"id": target_sid, "type": "service", "title": target_sid})
+
     blast_raw = result.get("blast_radius", []) or result.get("affected_services", [])
     if isinstance(blast_raw, dict):
         blast_items = blast_raw.get("blast_radius", []) or blast_raw.get(
@@ -130,6 +148,11 @@ def tool_result_to_graph_view(
                         inode = add(inc)
                         if inode:
                             edge(dn.id, "MOTIVATED_BY", inode.id)
+                mot_by = d.get("motivated_by") or d.get("properties", {}).get("motivated_by")
+                if mot_by:
+                    inode = add({"id": mot_by, "type": "incident", "title": mot_by})
+                    if inode:
+                        edge(dn.id, "MOTIVATED_BY", inode.id)
 
     # experts shape
     experts_raw = result.get("experts", [])
@@ -150,13 +173,20 @@ def tool_result_to_graph_view(
                 }
             )
 
-    # onboarding brief (composite - recurse into sub-keys)
-    for key in ("overview", "decisions", "experts", "blast_radius"):
-        if key in result and isinstance(result[key], dict):
-            sub = tool_result_to_graph_view(result[key])
-            for n in sub.nodes:
-                add({"id": n.id, "type": n.type, "title": n.title, **n.properties})
-            edges.extend(e for e in sub.edges if e.id not in {ex.id for ex in edges})
+    # onboarding brief (composite - only recurse if this is a composite brief)
+    is_composite = "overview" in result and any(k in result for k in ("decisions", "experts", "blast_radius"))
+    if is_composite:
+        for key in ("overview", "decisions", "experts", "blast_radius"):
+            val = result.get(key)
+            if isinstance(val, dict):
+                sub = tool_result_to_graph_view(val)
+                for n in sub.nodes:
+                    add({"id": n.id, "type": n.type, "title": n.title, **n.properties})
+                edges.extend(e for e in sub.edges if e.id not in {ex.id for ex in edges})
+            elif isinstance(val, list) and key == "experts":
+                for ex in val:
+                    if isinstance(ex, dict):
+                        add({"id": ex.get("id", ""), "type": "person", "title": ex.get("name") or ex.get("title", ex.get("id", ""))})
 
     return GraphView(
         nodes=nodes,
@@ -193,26 +223,50 @@ def tool_result_to_evidence(tool_name: str, result: dict) -> list[EvidenceItem]:
             )
         )
 
-    for d in result.get("decisions", []):
-        if d.get("id"):
-            items.append(
-                EvidenceItem(
-                    source_id=d["id"],
-                    title=d.get("title", d["id"]),
-                    source_type="decision",
-                    excerpt=(d.get("rationale", "") or "")[:200] or None,
+    # Pre-formed evidence list in result
+    if "evidence" in result and isinstance(result["evidence"], list):
+        for ev in result["evidence"]:
+            if isinstance(ev, EvidenceItem):
+                items.append(ev)
+            elif isinstance(ev, dict) and ev.get("source_id"):
+                items.append(
+                    EvidenceItem(
+                        source_id=ev["source_id"],
+                        title=ev.get("title", ev["source_id"]),
+                        source_type=ev.get("source_type", "document"),
+                        excerpt=ev.get("excerpt"),
+                        source_url=ev.get("source_url"),
+                    )
                 )
-            )
 
-    for ex in result.get("experts", []):
-        if ex.get("id"):
-            items.append(
-                EvidenceItem(
-                    source_id=ex["id"],
-                    title=ex.get("name") or ex.get("title", ex["id"]),
-                    source_type="person",
+    dec_items = result.get("decisions", [])
+    if isinstance(dec_items, dict):
+        dec_items = dec_items.get("decisions", [])
+    if isinstance(dec_items, list):
+        for d in dec_items:
+            if isinstance(d, dict) and d.get("id"):
+                items.append(
+                    EvidenceItem(
+                        source_id=d["id"],
+                        title=d.get("title", d["id"]),
+                        source_type="decision",
+                        excerpt=(d.get("rationale", "") or "")[:200] or None,
+                    )
                 )
-            )
+
+    exp_items = result.get("experts", [])
+    if isinstance(exp_items, dict):
+        exp_items = exp_items.get("experts", [])
+    if isinstance(exp_items, list):
+        for ex in exp_items:
+            if isinstance(ex, dict) and ex.get("id"):
+                items.append(
+                    EvidenceItem(
+                        source_id=ex["id"],
+                        title=ex.get("name") or ex.get("title", ex["id"]),
+                        source_type="person",
+                    )
+                )
 
     # onboarding brief composite
     for key in ("overview", "decisions", "experts", "blast_radius"):
@@ -224,4 +278,11 @@ def tool_result_to_evidence(tool_name: str, result: dict) -> list[EvidenceItem]:
                     items.append(item)
                     seen_ids.add(item.source_id)
 
-    return items
+    # Final deduplication
+    seen: set[str] = set()
+    deduped: list[EvidenceItem] = []
+    for it in items:
+        if it.source_id not in seen:
+            seen.add(it.source_id)
+            deduped.append(it)
+    return deduped
