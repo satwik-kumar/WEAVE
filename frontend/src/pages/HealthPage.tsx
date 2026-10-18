@@ -1,42 +1,85 @@
-import { useEffect, useState } from 'react';
-import { getHealthScore } from '../api/reports';
-import { HealthScorePanel } from '../components/health/HealthScorePanel';
-import { GapsList } from '../components/health/GapsList';
-import type { HealthScore } from '../types/api';
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { getHealthReport } from "../api/reports";
+import { getNeighborhood } from "../api/graph";
+import type { GraphNode } from "../types/api";
+import { HealthScorePanel } from "../components/health/HealthScorePanel";
+import { GapsList } from "../components/health/GapsList";
+import { GraphCanvas } from "../components/graph/GraphCanvas";
+import { useGraphStore } from "../store/graphStore";
 
 export function HealthPage() {
-  const [data, setData] = useState<HealthScore | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  const {
+    data: report,
+    error: failure,
+    refetch,
+    isFetching,
+  } = useQuery({ queryKey: ["health"], queryFn: getHealthReport });
+  const [expansionError, setExpansionError] = useState("");
+  const [expanding, setExpanding] = useState(false);
+  const active = useRef(true);
   useEffect(() => {
-    getHealthScore()
-      .then(setData)
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+    active.current = true;
+    useGraphStore.getState().setContext("health");
+    return () => {
+      active.current = false;
+    };
   }, []);
-
-  if (loading) {
-    return (
-      <div style={{ padding: 32, color: 'var(--text-secondary)' }}>
-        Loading health data...
-      </div>
-    );
+  const error = expansionError || failure?.message;
+  useEffect(() => {
+    if (report) useGraphStore.getState().replace(report.graph);
+  }, [report]);
+  async function select(node: GraphNode) {
+    if (expanding) return;
+    setExpanding(true);
+    try {
+      const graph = await getNeighborhood(node.id);
+      if (!active.current) return;
+      useGraphStore.getState().replace(graph);
+      useGraphStore.getState().select(node.id);
+    } catch (e) {
+      if (active.current)
+        setExpansionError(
+          e instanceof Error ? e.message : "Gap expansion failed.",
+        );
+    } finally {
+      if (active.current) setExpanding(false);
+    }
   }
-  if (error || !data) {
-    return (
-      <div style={{ padding: 32, color: 'var(--stale)' }}>
-        Failed to load: {error ?? 'Unknown error'}
-      </div>
-    );
-  }
-
   return (
-    <div style={{ padding: 32, maxWidth: 700 }}>
-      <HealthScorePanel data={data} />
-      <div style={{ marginTop: 24 }}>
-        <GapsList gaps={data.gaps} />
-      </div>
-    </div>
+    <main className="report-workspace">
+      <section className="report-content">
+        <div className="panel-heading">
+          <div>
+            <small>FIND THE MISSING CONTEXT</small>
+            <h1>Knowledge Health</h1>
+          </div>
+          <button onClick={() => void refetch()}>Refresh</button>
+        </div>
+        {error && (
+          <p role="alert" className="error">
+            {error}
+            <button onClick={() => void refetch()}>Retry report</button>
+          </p>
+        )}
+        {isFetching && !error && <p role="status">Loading knowledge health…</p>}
+        {report && (
+          <>
+            <HealthScorePanel report={report} />
+            {report.warnings.map((w) => (
+              <p className="notice" key={w}>
+                {w}
+              </p>
+            ))}
+            <GapsList
+              gaps={report.gaps}
+              onSelect={(node) => void select(node)}
+            />
+          </>
+        )}
+        {expanding && <p role="status">Loading gap context…</p>}
+      </section>
+      <GraphCanvas />
+    </main>
   );
 }

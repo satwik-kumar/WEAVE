@@ -1,39 +1,25 @@
-interface Props {
+export function SuggestedFollowups({
+  suggestions,
+  onSelect,
+  disabled = false,
+}: {
   suggestions: string[];
   onSelect: (question: string) => void;
-}
-
-export function SuggestedFollowups({ suggestions, onSelect }: Props) {
-  if (!suggestions || suggestions.length === 0) return null;
+  disabled?: boolean;
+}) {
+  if (!suggestions.length) return null;
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 14 }}>
-      {suggestions.map((s) => (
+    <section className="followups" aria-label="Suggested followups">
+      <h3>Keep exploring</h3>
+      {suggestions.map((question) => (
         <button
-          key={s}
-          onClick={() => onSelect(s)}
-          style={{
-            background: 'var(--bg-elevated)',
-            border: '1px solid var(--border)',
-            borderRadius: 20,
-            padding: '6px 14px',
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-secondary)',
-            cursor: 'pointer',
-            transition: 'border-color 0.15s, color 0.15s',
-          }}
-          onMouseOver={(e) => {
-            (e.target as HTMLButtonElement).style.borderColor = 'var(--accent)';
-            (e.target as HTMLButtonElement).style.color = 'var(--text-primary)';
-          }}
-          onMouseOut={(e) => {
-            (e.target as HTMLButtonElement).style.borderColor = 'var(--border)';
-            (e.target as HTMLButtonElement).style.color =
-              'var(--text-secondary)';
-          }}
+          disabled={disabled}
+          key={question}
+          onClick={() => onSelect(question)}
         >
-          {s}
+          {question} ↗
         </button>
       ))}
-    </div>
+    </section>
   );
 }
