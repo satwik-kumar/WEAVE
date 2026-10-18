@@ -184,8 +184,12 @@ def parse_python_repository(
 
     # Gather all Python files in deterministic sorted order
     all_py_files = sorted(
-        p for p in root.rglob("*.py")
-        if not any(part.startswith(".") or part in ("__pycache__", "venv", ".venv") for part in p.parts)
+        p
+        for p in root.rglob("*.py")
+        if not any(
+            part.startswith(".") or part in ("__pycache__", "venv", ".venv")
+            for part in p.parts
+        )
     )
 
     module_map = _build_module_map(root, all_py_files)

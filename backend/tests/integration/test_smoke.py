@@ -19,7 +19,9 @@ from weave_brain.graph.fixtures import (
 )
 
 
-def test_configuration_error_when_env_vars_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_configuration_error_when_env_vars_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """Verify get_graph raises ConfigurationError when any required env var is missing or invalid."""
     monkeypatch.delenv("FALKORDB_HOST", raising=False)
     monkeypatch.delenv("FALKORDB_PORT", raising=False)
@@ -114,9 +116,7 @@ def test_merge_idempotency_and_cleanup(falkordb_graph: Any) -> None:
     try:
         # Run MERGE twice
         merge_query = (
-            "MERGE (n:TestNode {id: $id}) "
-            "ON CREATE SET n.title = $title "
-            "RETURN n"
+            "MERGE (n:TestNode {id: $id}) ON CREATE SET n.title = $title RETURN n"
         )
         res1 = falkordb_graph.query(merge_query, params)
         assert len(res1.result_set) == 1

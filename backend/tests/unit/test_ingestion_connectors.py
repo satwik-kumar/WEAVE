@@ -30,6 +30,7 @@ DEMO_DIR = REPO_ROOT / "data" / "demo"
 # 1. Structured JSON Connector Tests
 # ==============================================================================
 
+
 def test_load_json_file_valid():
     """Verify loading a valid demo JSON file returns typed SourceArtifact objects."""
     services_path = DEMO_DIR / "services.json"
@@ -81,6 +82,7 @@ def test_load_json_file_validation_error(tmp_path: Path):
 # ==============================================================================
 # 2. Local Markdown Connector Tests
 # ==============================================================================
+
 
 def test_parse_markdown_file_with_frontmatter(tmp_path: Path):
     """Verify parsing a markdown file with YAML frontmatter."""
@@ -157,6 +159,7 @@ def test_parse_markdown_file_not_found():
 # 3. Python Repository AST Parser Tests
 # ==============================================================================
 
+
 def test_parse_python_file_ast_and_imports(tmp_path: Path):
     """Verify AST parsing extracts internal module imports adhering to (:File)-[:IMPORTS]->(:File)."""
     src_dir = tmp_path / "src" / "pkg"
@@ -196,7 +199,9 @@ def run():
 def test_parse_python_file_syntax_error_handling(tmp_path: Path):
     """Verify ast.parse catches SyntaxError, sets properties['parse_error'], and does not crash."""
     broken_file = tmp_path / "broken.py"
-    broken_file.write_text("def broken_func(\n    # Missing closing paren\n", encoding="utf-8")
+    broken_file.write_text(
+        "def broken_func(\n    # Missing closing paren\n", encoding="utf-8"
+    )
 
     artifact = parse_python_file(
         file_path=broken_file,
@@ -222,7 +227,9 @@ def test_parse_python_repository_contains_and_test_detection(tmp_path: Path):
     app_py.write_text("class App: pass\n", encoding="utf-8")
 
     test_py = tests_dir / "test_app.py"
-    test_py.write_text("from src.app import App\ndef test_app(): pass\n", encoding="utf-8")
+    test_py.write_text(
+        "from src.app import App\ndef test_app(): pass\n", encoding="utf-8"
+    )
 
     artifacts = parse_python_repository(
         repo_path=tmp_path,
@@ -247,4 +254,7 @@ def test_parse_python_repository_contains_and_test_detection(tmp_path: Path):
     # Check is_test flags
     file_map = {a.canonical_id: a for a in artifacts[1:]}
     assert file_map["file:acme/sample-repo:src/app.py"].properties["is_test"] is False
-    assert file_map["file:acme/sample-repo:tests/test_app.py"].properties["is_test"] is True
+    assert (
+        file_map["file:acme/sample-repo:tests/test_app.py"].properties["is_test"]
+        is True
+    )

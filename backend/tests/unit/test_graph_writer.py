@@ -53,9 +53,7 @@ class MockGraph:
             return MockQueryResult(nodes_created=1 if self.node_created else 0)
         if cypher.startswith("MATCH ("):
             if not self.edge_matched:
-                return MockQueryResult(
-                    result_set=[], relationships_created=0
-                )
+                return MockQueryResult(result_set=[], relationships_created=0)
             return MockQueryResult(
                 result_set=[["type"]],
                 relationships_created=1 if self.edge_created else 0,
@@ -266,12 +264,8 @@ def test_upsert_many_two_phase_and_reporting() -> None:
                 return MockQueryResult(nodes_created=1)
             if "DEPENDS_ON" in cypher:
                 # Target nonexistent
-                return MockQueryResult(
-                    result_set=[], relationships_created=0
-                )
-            return MockQueryResult(
-                result_set=[["OWNS"]], relationships_created=1
-            )
+                return MockQueryResult(result_set=[], relationships_created=0)
+            return MockQueryResult(result_set=[["OWNS"]], relationships_created=1)
 
     graph = TwoPhaseMockGraph()
     report = upsert_many(artifacts, graph=graph, source_name="unit_test")
