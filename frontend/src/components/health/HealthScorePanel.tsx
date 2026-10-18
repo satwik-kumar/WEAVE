@@ -1,99 +1,36 @@
-import type { HealthScore, HealthDimension } from '../../types/api';
+import type { HealthReport } from "../../types/api";
 
-function DimensionRow({ dim }: { dim: HealthDimension }) {
-  const pct = Math.round(dim.score * 100);
-  const color =
-    dim.status === 'good'
-      ? 'var(--fresh)'
-      : dim.status === 'warning'
-      ? 'var(--aging)'
-      : 'var(--stale)';
-  const icon = dim.status === 'good' ? '✓' : '▲';
-
+const labels: Record<string, string> = {
+  services_owned: "Services owned",
+  decisions_rationale: "Decisions with rationale",
+  incidents_resolved: "Incidents resolved",
+  services_documented: "Services documented",
+};
+export function HealthScorePanel({ report }: { report: HealthReport }) {
   return (
-    <div style={{ marginBottom: 12 }}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          fontSize: 'var(--text-sm)',
-          color: 'var(--text-secondary)',
-          marginBottom: 4,
-        }}
-      >
-        <span>{dim.label}</span>
-        <span style={{ color }}>
-          {dim.current}/{dim.total} &nbsp; {icon}
-        </span>
+    <section aria-label="Knowledge health score">
+      <div className="health-score">
+        <strong>
+          {report.health_score}
+          <small>/100</small>
+        </strong>
+        <div>
+          <h2>Knowledge health</h2>
+          <p>
+            {report.gaps.total_gaps} gaps across ownership, rationale and
+            documentation
+          </p>
+        </div>
       </div>
-      <div
-        style={{
-          background: 'var(--bg-elevated)',
-          borderRadius: 4,
-          height: 6,
-          overflow: 'hidden',
-        }}
-      >
-        <div
-          style={{
-            width: `${pct}%`,
-            height: '100%',
-            background: color,
-            borderRadius: 4,
-            transition: 'width 0.4s ease',
-          }}
-        />
+      <div className="metric-grid">
+        {Object.entries(report.metrics).map(([key, value]) => (
+          <article key={key}>
+            <strong>{Math.round(value * 100)}%</strong>
+            <span>{labels[key] ?? key}</span>
+            <progress aria-label={labels[key]} max={1} value={value} />
+          </article>
+        ))}
       </div>
-    </div>
-  );
-}
-
-export function HealthScorePanel({ data }: { data: HealthScore }) {
-  const pct = Math.round(data.overall * 100);
-  return (
-    <div
-      style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 12,
-        padding: 24,
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: 20,
-        }}
-      >
-        <h2
-          style={{
-            margin: 0,
-            fontSize: 'var(--text-lg)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          Company Knowledge Health
-        </h2>
-        <span
-          style={{
-            fontSize: 'var(--text-2x1)',
-            fontWeight: 600,
-            color:
-              pct >= 80
-                ? 'var(--fresh)'
-                : pct >= 50
-                ? 'var(--aging)'
-                : 'var(--stale)',
-          }}
-        >
-          {pct}%
-        </span>
-      </div>
-      {data.dimensions.map((d) => (
-        <DimensionRow key={d.label} dim={d} />
-      ))}
-    </div>
+    </section>
   );
 }

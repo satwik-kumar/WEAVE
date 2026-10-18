@@ -1,64 +1,43 @@
-import type { KnowledgeGap } from '../../types/api';
+import { Link } from "react-router-dom";
+import type { KnowledgeGaps, GraphNode } from "../../types/api";
 
-const GAP_LABEL: Record<string, string> = {
-  no_owner: 'No owner assigned',
-  missing_rationale: 'Decision has no documented rationale',
-  undocumented: 'No linked documentation',
-};
-
-export function GapsList({ gaps }: { gaps: KnowledgeGap[] }) {
-  if (!gaps.length) {
-    return (
-      <p style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-sm)' }}>
-        No knowledge gaps found. Graph is complete.
-      </p>
-    );
-  }
+export function GapsList({
+  gaps,
+  onSelect,
+}: {
+  gaps: KnowledgeGaps;
+  onSelect: (node: GraphNode) => void;
+}) {
+  const groups = [
+    ["Unowned services", gaps.unowned_services],
+    ["Decisions missing rationale", gaps.decisions_missing_rationale],
+    ["Undocumented services", gaps.undocumented_services],
+  ] as const;
   return (
-    <div>
-      <h3
-        style={{
-          fontSize: 'var(--text-base)',
-          color: 'var(--text-primary)',
-          marginBottom: 12,
-        }}
-      >
-        Knowledge Gaps
-      </h3>
-      {gaps.map((g) => (
-        <div
-          key={g.entity_id}
-          style={{
-            display: 'flex',
-            gap: 12,
-            alignItems: 'flex-start',
-            padding: '10px 0',
-            borderBottom: '1px solid var(--border)',
-          }}
-        >
-          <span style={{ color: 'var(--aging)', marginTop: 1 }}>▲</span>
-          <div>
-            <span
-              style={{
-                fontFamily: 'var(--font-mono)',
-                fontSize: 'var(--text-xs)',
-                color: 'var(--text-code)',
-              }}
-            >
-              {g.entity_id}
-            </span>
-            <p
-              style={{
-                margin: '2px 0 0',
-                fontSize: 'var(--text-sm)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              {GAP_LABEL[g.gap_type] ?? g.gap_type}
-            </p>
-          </div>
-        </div>
+    <section className="gaps-list">
+      <h2>Knowledge gaps</h2>
+      {gaps.warning && <p className="notice">{gaps.warning}</p>}
+      {gaps.total_gaps === 0 && <p>No gaps found in the retrieved records.</p>}
+      {groups.map(([title, nodes]) => (
+        <section key={title}>
+          <h3>
+            {title} · {nodes.length}
+          </h3>
+          {nodes.map((node) => (
+            <article key={node.id}>
+              <button onClick={() => onSelect(node)}>{node.title}</button>
+              <code>{node.id}</code>
+              {node.type === "service" && (
+                <Link
+                  to={`/onboarding?service_id=${encodeURIComponent(node.id)}`}
+                >
+                  Open onboarding ↗
+                </Link>
+              )}
+            </article>
+          ))}
+        </section>
       ))}
-    </div>
+    </section>
   );
 }

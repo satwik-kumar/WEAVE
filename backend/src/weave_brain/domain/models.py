@@ -94,15 +94,13 @@ class SourceArtifact(BaseModel):
     canonical_id: str  # stable graph node id
     title: str
     properties: dict[str, Any]
-    relationships: list[RelationshipEdge] = (
-        []
-    )  # (rel_type, target_canonical_id[, props])
+    relationships: list[
+        RelationshipEdge
+    ] = []  # (rel_type, target_canonical_id[, props])
     source_url: str | None = None
     content_hash: str | None = None
     source_updated_at: datetime | None = None
-    ingested_at: datetime = Field(
-        default_factory=lambda: datetime.now(UTC)
-    )
+    ingested_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class SyncReport(BaseModel):
@@ -147,3 +145,34 @@ class HealthScore(BaseModel):
     dimensions: list[HealthDimension]
     overall: float
     gaps: list[KnowledgeGap] = []
+
+
+class KnowledgeGaps(BaseModel):
+    unowned_services: list[GraphNode] = []
+    decisions_missing_rationale: list[GraphNode] = []
+    undocumented_services: list[GraphNode] = []
+    total_gaps: int = 0
+    truncated: bool = False
+    warning: str | None = None
+
+
+class HealthMetrics(BaseModel):
+    services_owned: float
+    decisions_rationale: float
+    incidents_resolved: float
+    services_documented: float
+
+
+class HealthReport(BaseModel):
+    health_score: float
+    metrics: HealthMetrics
+    counts: dict[str, int]
+    gaps: KnowledgeGaps
+    graph: GraphView | None = None
+    warnings: list[str] = []
+
+
+class DecisionReport(BaseModel):
+    nodes: list[GraphNode]
+    evidence: list[EvidenceItem]
+    graph: GraphView

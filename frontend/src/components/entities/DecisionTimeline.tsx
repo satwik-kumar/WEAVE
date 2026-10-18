@@ -1,100 +1,57 @@
-import { useEffect, useState } from 'react';
-
-interface TimelineItem {
-  id: string;
-  title: string;
-  status: string; // "active" | "superseded"
-  decision_date?: string;
-  rationale?: string;
-}
-
-async function fetchDecisions(serviceId: string): Promise<TimelineItem[]> {
-  try {
-    const res = await fetch(
-      `/api/v1/reports/onboarding?service_id=${encodeURIComponent(serviceId)}`
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    const raw = (data.key_decisions ?? []) as Array<Record<string, unknown>>;
-    return raw.map((d) => ({
-      id: String(d.id || d.source_id || ''),
-      title: String(d.title || ''),
-      status: String(d.status || d.decision_status || 'active'),
-      decision_date: d.decision_date ? String(d.decision_date) : undefined,
-      rationale:
-        d.rationale || d.excerpt ? String(d.rationale || d.excerpt) : undefined,
-    }));
-  } catch {
-    return [];
-  }
-}
+import { useQuery } from "@tanstack/react-query";
+import { getDecisions } from "../../api/reports";
+import { useGraphStore } from "../../store/graphStore";
 
 export function DecisionTimeline({ serviceId }: { serviceId: string }) {
-  const [items, setItems] = useState<TimelineItem[]>([]);
-
-  useEffect(() => {
-    fetchDecisions(serviceId).then(setItems);
-  }, [serviceId]);
-
-  if (!items.length) return null;
-
+  const {
+    data: report,
+    error: failure,
+    refetch,
+  } = useQuery({
+    queryKey: ["decisions", serviceId],
+    queryFn: () => getDecisions(serviceId),
+  });
+  const error = failure?.message;
   return (
-    <div style={{ marginTop: 16 }}>
-      <h4
-        style={{
-          fontSize: 'var(--text-xs)',
-          color: 'var(--text-muted)',
-          textTransform: 'uppercase',
-          letterSpacing: '0.06em',
-          margin: '0 0 10px',
-        }}
-      >
-        Decision History
-      </h4>
-      {items.map((item) => (
-        <div
-          key={item.id}
-          style={{
-            padding: '8px 0',
-            borderLeft: '2px solid var(--c-decision)',
-            paddingLeft: 12,
-            marginBottom: 8,
-            opacity: item.status === 'superseded' ? 0.45 : 1,
-          }}
-        >
-          <span
-            style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: 'var(--text-xs)',
-              color: 'var(--text-code)',
-              textDecoration:
-                item.status === 'superseded' ? 'line-through' : 'none',
-            }}
-          >
-            {item.id}
-          </span>
-          <p
-            style={{
-              margin: '2px 0 0',
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-primary)',
-            }}
-          >
-            {item.title}
-            {item.status === 'superseded' && (
-              <span
-                style={{
-                  marginLeft: 8,
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--stale)',
+    <section className="decision-timeline" aria-label="Decision timeline">
+      <h3>Decision timeline</h3>
+      {error ? (
+        <p className="error">
+          {error}
+          <button onClick={() => void refetch()}>Retry timeline</button>
+        </p>
+      ) : !report ? (
+        <p role="status">Loading decisions…</p>
+      ) : !report.nodes.length ? (
+        <p className="muted">No decisions recorded for this service.</p>
+      ) : (
+        <ol>
+          {report.nodes.map((node) => (
+            <li key={node.id}>
+              <time>
+                {String(node.properties.decision_date ?? "Date unknown")}
+              </time>
+              <strong>{node.title}</strong>
+              <small>
+                {String(node.properties.status ?? "Status unknown")}
+              </small>
+              <p>
+                {String(node.properties.rationale || "No rationale recorded.")}
+              </p>
+              <button
+                onClick={() => {
+                  useGraphStore
+                    .getState()
+                    .replace(report.graph, "decision_rationale");
+                  useGraphStore.getState().select(node.id);
                 }}
               >
-                superseded
-              </span>
-            )}
-          </p>
-        </div>
-      ))}
-    </div>
+                Show decision graph
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
   );
 }

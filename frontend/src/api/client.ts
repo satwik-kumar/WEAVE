@@ -1,45 +1,38 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const base = (
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"
+).replace(/\/$/, "");
 
-export async function apiGet<T>(path: string): Promise<T> {
-  const url = path.startsWith('http')
-    ? path
-    : `${BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
-  const response = await fetch(url);
-  if (!response.ok) {
-    let message = `HTTP ${response.status} ${response.statusText}`;
-    try {
-      const err = await response.json();
-      if (err?.detail) {
-        message = typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail);
-      }
-    } catch {
-      // ignore non-json error responses
+export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
+  try {
+    const response = await fetch(`${base}/api${path}`, {
+      ...init,
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      const messages: Record<number, string> = {
+        400: "Please check the question or entity ID.",
+        404: "No matching entity was retrieved.",
+        503: "A backend dependency is unavailable. Please retry.",
+      };
+      throw new Error(
+        messages[response.status] ||
+          `Request failed (${response.status}). Please retry.`,
+      );
     }
-    throw new Error(message);
-  }
-  return response.json() as Promise<T>;
-}
-
-export async function apiPost<T, B = unknown>(path: string, body: B): Promise<T> {
-  const url = path.startsWith('http')
-    ? path
-    : `${BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!response.ok) {
-    let message = `HTTP ${response.status} ${response.statusText}`;
-    try {
-      const err = await response.json();
-      if (err?.detail) {
-        message = typeof err.detail === 'string' ? err.detail : JSON.stringify(err.detail);
-      }
-    } catch {
-      // ignore non-json error responses
+    return (await response.json()) as T;
+  } catch (error) {
+    if (
+      error instanceof TypeError ||
+      (error instanceof DOMException && error.name === "AbortError")
+    ) {
+      throw new Error(
+        "Cannot reach the API or the request timed out. Please retry.",
+      );
     }
-    throw new Error(message);
+    throw error;
+  } finally {
+    clearTimeout(timer);
   }
-  return response.json() as Promise<T>;
 }

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import logging
+import re
 import time
+from dataclasses import dataclass
 from typing import Any
 
 from weave_brain.graph.client import get_graph
@@ -14,11 +16,19 @@ QUERY_LIMIT: int = 50
 MAX_TRAVERSAL_DEPTH: int = 3
 
 
+@dataclass
+class _QueryRows:
+    result_set: list[Any]
+    truncated: bool = False
+
+
 def _unpack_node(node: Any) -> dict[str, Any]:
     """Unpack a FalkorDB Node object or dictionary into a clean dictionary."""
     if isinstance(node, dict):
         nid = str(node.get("id", ""))
-        ntype = str(node.get("type") or (nid.split(":")[0] if ":" in nid else "service"))
+        ntype = str(
+            node.get("type") or (nid.split(":")[0] if ":" in nid else "service")
+        )
         title = str(node.get("title") or nid)
         props = dict(node.get("properties", {}))
         return {
@@ -34,7 +44,11 @@ def _unpack_node(node: Any) -> dict[str, Any]:
     props = dict(getattr(node, "properties", {}))
     nid = str(props.get("id", ""))
     labels = list(getattr(node, "labels", []))
-    ntype = labels[0].lower() if labels else (nid.split(":")[0] if ":" in nid else "service")
+    ntype = (
+        labels[0].lower()
+        if labels
+        else (nid.split(":")[0] if ":" in nid else "service")
+    )
     title = str(props.get("title", nid))
 
     clean_props = {k: v for k, v in props.items() if k not in ("id", "title")}
@@ -52,7 +66,12 @@ def _unpack_node(node: Any) -> dict[str, Any]:
 def _unpack_edge(edge: Any, source_id: str, target_id: str) -> dict[str, Any]:
     """Unpack a FalkorDB Edge object or dictionary into a clean dictionary."""
     if isinstance(edge, dict):
-        rel = str(edge.get("relationship_type") or edge.get("label") or edge.get("relation") or "RELATED_TO")
+        rel = str(
+            edge.get("relationship_type")
+            or edge.get("label")
+            or edge.get("relation")
+            or "RELATED_TO"
+        )
         eid = str(edge.get("id") or f"{source_id}::{rel}::{target_id}")
         return {
             "id": eid,
@@ -82,8 +101,16 @@ def _unpack_path(path: Any) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]
     if not path:
         return ([], [])
 
-    nodes = path.nodes() if callable(getattr(path, "nodes", None)) else getattr(path, "nodes", [])
-    edges = path.edges() if callable(getattr(path, "edges", None)) else getattr(path, "edges", [])
+    nodes = (
+        path.nodes()
+        if callable(getattr(path, "nodes", None))
+        else getattr(path, "nodes", [])
+    )
+    edges = (
+        path.edges()
+        if callable(getattr(path, "edges", None))
+        else getattr(path, "edges", [])
+    )
 
     # Build internal database id -> canonical string id mapping
     id_map: dict[Any, str] = {}
@@ -111,19 +138,49 @@ def _execute_query(
     params: dict[str, Any] | None = None,
     query_name: str = "cypher_query",
 ) -> Any:
-    """Execute a parameterized query against FalkorDB with debug timing."""
+    """Execute a parameterized query against FalkorDB with debug timing and truncation signaling."""
     active_graph = graph if graph is not None else get_graph()
     params = params or {}
     start_time = time.perf_counter()
 
+    # Determine if query should be bounded with over-fetching
+    # Aggregate/count queries and single-result queries (LIMIT 1) are not subject to multi-row truncation.
+    is_count = "count(" in cypher.lower()
+    match_limit = re.search(r"\bLIMIT\s+(\d+)\s*$", cypher, re.IGNORECASE)
+
+    bounded = not is_count and (match_limit is None or int(match_limit.group(1)) > 1)
+    limit_val = int(match_limit.group(1)) if match_limit else QUERY_LIMIT
+
+    executed_cypher = cypher
+    if bounded:
+        if match_limit:
+            executed_cypher = re.sub(
+                r"\bLIMIT\s+\d+\s*$",
+                f"LIMIT {limit_val + 1}",
+                cypher,
+                flags=re.IGNORECASE,
+            )
+        else:
+            executed_cypher = f"{cypher} LIMIT {limit_val + 1}"
+
     try:
-        res = active_graph.query(cypher, params)
+        raw_res = active_graph.query(executed_cypher, params)
+        rows = getattr(raw_res, "result_set", [])
         duration_ms = (time.perf_counter() - start_time) * 1000
+
+        if bounded:
+            is_truncated = len(rows) > limit_val
+            final_rows = rows[:limit_val] if is_truncated else rows
+            res = _QueryRows(result_set=final_rows, truncated=is_truncated)
+        else:
+            res = _QueryRows(result_set=rows, truncated=False)
+
         logger.debug(
-            "Query [%s] executed in %.2fms (returned %d rows)",
+            "Query [%s] executed in %.2fms (returned %d rows, truncated=%s)",
             query_name,
             duration_ms,
-            len(getattr(res, "result_set", [])),
+            len(res.result_set),
+            res.truncated,
         )
         return res
     except Exception as e:
@@ -164,7 +221,9 @@ def get_service_overview(service_id: str, graph: Any = None) -> dict[str, Any] |
     edges: list[dict[str, Any]] = []
     if team_res.result_set:
         team_node = _unpack_node(team_res.result_set[0][0])
-        edges.append(_unpack_edge(team_res.result_set[0][1], team_node["id"], service_id))
+        edges.append(
+            _unpack_edge(team_res.result_set[0][1], team_node["id"], service_id)
+        )
 
     # Repositories
     repo_res = _execute_query(
@@ -221,24 +280,28 @@ def get_service_overview(service_id: str, graph: Any = None) -> dict[str, Any] |
     evidence: list[dict[str, Any]] = []
     for dec in decisions:
         excerpt = dec.get("properties", {}).get("rationale") or dec.get("title")
-        evidence.append({
-            "source_id": dec["id"],
-            "title": dec["title"],
-            "source_type": "decision",
-            "excerpt": excerpt,
-            "source_url": None,
-            "relationship_path": [dec["id"], service_id],
-        })
+        evidence.append(
+            {
+                "source_id": dec["id"],
+                "title": dec["title"],
+                "source_type": "decision",
+                "excerpt": excerpt,
+                "source_url": None,
+                "relationship_path": [dec["id"], service_id],
+            }
+        )
     for doc in documents:
         props = doc.get("properties", {})
-        evidence.append({
-            "source_id": doc["id"],
-            "title": doc["title"],
-            "source_type": "document",
-            "excerpt": props.get("content_excerpt") or doc["title"],
-            "source_url": props.get("source_url"),
-            "relationship_path": [doc["id"], service_id],
-        })
+        evidence.append(
+            {
+                "source_id": doc["id"],
+                "title": doc["title"],
+                "source_type": "document",
+                "excerpt": props.get("content_excerpt") or doc["title"],
+                "source_url": props.get("source_url"),
+                "relationship_path": [doc["id"], service_id],
+            }
+        )
 
     all_nodes = [service_node]
     if team_node:
@@ -278,7 +341,9 @@ def get_decisions_for_service(service_id: str, graph: Any = None) -> dict[str, A
         "RETURN d, r, inc, m, newer, sup, older, sup_out "
         f"LIMIT {QUERY_LIMIT}"
     )
-    res = _execute_query(graph, cypher, {"sid": service_id}, "get_decisions_for_service")
+    res = _execute_query(
+        graph, cypher, {"sid": service_id}, "get_decisions_for_service"
+    )
 
     nodes_map: dict[str, dict[str, Any]] = {}
     edges_map: dict[str, dict[str, Any]] = {}
@@ -302,14 +367,17 @@ def get_decisions_for_service(service_id: str, graph: Any = None) -> dict[str, A
             nodes_map[inc_node["id"]] = inc_node
             e = _unpack_edge(m_raw, d_node["id"], inc_node["id"])
             edges_map[e["id"]] = e
-            evidence_items.append({
-                "source_id": d_node["id"],
-                "title": d_node["title"],
-                "source_type": "decision",
-                "excerpt": d_node.get("properties", {}).get("rationale") or f"Motivated by {inc_node['id']}",
-                "source_url": None,
-                "relationship_path": [d_node["id"], inc_node["id"]],
-            })
+            evidence_items.append(
+                {
+                    "source_id": d_node["id"],
+                    "title": d_node["title"],
+                    "source_type": "decision",
+                    "excerpt": d_node.get("properties", {}).get("rationale")
+                    or f"Motivated by {inc_node['id']}",
+                    "source_url": None,
+                    "relationship_path": [d_node["id"], inc_node["id"]],
+                }
+            )
 
         if newer_raw and sup_raw and d_raw:
             newer_node = _unpack_node(newer_raw)
@@ -326,22 +394,25 @@ def get_decisions_for_service(service_id: str, graph: Any = None) -> dict[str, A
     # Fallback evidence for decisions without incidents
     for dec in decisions_list:
         if not any(ev["source_id"] == dec["id"] for ev in evidence_items):
-            evidence_items.append({
-                "source_id": dec["id"],
-                "title": dec["title"],
-                "source_type": "decision",
-                "excerpt": dec.get("properties", {}).get("rationale") or dec["title"],
-                "source_url": None,
-                "relationship_path": [dec["id"], service_id],
-            })
+            evidence_items.append(
+                {
+                    "source_id": dec["id"],
+                    "title": dec["title"],
+                    "source_type": "decision",
+                    "excerpt": dec.get("properties", {}).get("rationale")
+                    or dec["title"],
+                    "source_url": None,
+                    "relationship_path": [dec["id"], service_id],
+                }
+            )
 
     graph_dict = {
         "nodes": list(nodes_map.values()),
         "edges": list(edges_map.values()),
         "root_node_ids": [d["id"] for d in decisions_list],
         "highlighted_path_ids": [],
-        "truncated": False,
-        "warning": None,
+        "truncated": res.truncated,
+        "warning": "Query results limited to 50 rows." if res.truncated else None,
     }
 
     return {
@@ -408,7 +479,9 @@ def get_blast_radius(
             n["on_highlighted_path"] = True
             if n["id"] not in nodes_map:
                 nodes_map[n["id"]] = n
-                if n["id"] != service_id and n["id"] not in [x["id"] for x in affected_services]:
+                if n["id"] != service_id and n["id"] not in [
+                    x["id"] for x in affected_services
+                ]:
                     affected_services.append(n)
 
         for e in unpacked_edges:
@@ -417,22 +490,24 @@ def get_blast_radius(
                 highlighted_path_ids.append(e["id"])
 
     for dep in affected_services:
-        evidence_items.append({
-            "source_id": dep["id"],
-            "title": dep["title"],
-            "source_type": "service",
-            "excerpt": f"{dep['id']} depends on {service_id} and will fail if it goes down",
-            "source_url": None,
-            "relationship_path": [dep["id"], service_id],
-        })
+        evidence_items.append(
+            {
+                "source_id": dep["id"],
+                "title": dep["title"],
+                "source_type": "service",
+                "excerpt": f"{dep['id']} depends on {service_id} and will fail if it goes down",
+                "source_url": None,
+                "relationship_path": [dep["id"], service_id],
+            }
+        )
 
     graph_dict = {
         "nodes": list(nodes_map.values()),
         "edges": list(edges_map.values()),
         "root_node_ids": [service_id],
         "highlighted_path_ids": highlighted_path_ids,
-        "truncated": False,
-        "warning": None,
+        "truncated": res.truncated,
+        "warning": "Query results limited to 50 rows." if res.truncated else None,
     }
 
     return {
@@ -475,9 +550,7 @@ def find_experts(service_id: str, graph: Any = None) -> list[dict[str, Any]]:
     return list(experts_map.values())
 
 
-def get_neighborhood(
-    node_id: str, depth: int = 2, graph: Any = None
-) -> dict[str, Any]:
+def get_neighborhood(node_id: str, depth: int = 2, graph: Any = None) -> dict[str, Any]:
     """Return graph neighborhood centered on node_id with bounded depth."""
     bounded_depth = min(max(1, depth), MAX_TRAVERSAL_DEPTH)
 
@@ -519,18 +592,16 @@ def get_neighborhood(
         "edges": list(edges_map.values()),
         "root_node_ids": [node_id],
         "highlighted_path_ids": [],
-        "truncated": False,
-        "warning": None,
+        "truncated": res.truncated,
+        "warning": "Query results limited to 50 rows." if res.truncated else None,
     }
 
 
-def find_shortest_path(
-    from_id: str, to_id: str, graph: Any = None
-) -> dict[str, Any]:
-    """Find the shortest path connecting from_id and to_id up to 5 hops."""
+def find_shortest_path(from_id: str, to_id: str, graph: Any = None) -> dict[str, Any]:
+    """Find the shortest path connecting from_id and to_id up to 3 hops."""
     cypher = (
         "MATCH (a {id: $from_id}), (b {id: $to_id}) "
-        "MATCH path = (a)-[*1..5]-(b) "
+        "MATCH path = (a)-[*1..3]-(b) "
         "RETURN path "
         "ORDER BY length(path) ASC "
         "LIMIT 1"
@@ -598,6 +669,13 @@ def get_knowledge_gaps(graph: Any = None) -> dict[str, Any]:
     )
     undocumented_services = [_unpack_node(row[0]) for row in undoc_res.result_set]
 
+    is_truncated = any(result.truncated for result in (unowned_res, dec_res, undoc_res))
+    warning = (
+        "Gap lists are bounded to 50 records per category; the displayed count may be incomplete."
+        if is_truncated
+        else None
+    )
+
     return {
         "unowned_services": unowned_services,
         "decisions_missing_rationale": decisions_missing_rationale,
@@ -605,6 +683,8 @@ def get_knowledge_gaps(graph: Any = None) -> dict[str, Any]:
         "total_gaps": len(unowned_services)
         + len(decisions_missing_rationale)
         + len(undocumented_services),
+        "truncated": is_truncated,
+        "warning": warning,
     }
 
 
@@ -614,17 +694,26 @@ def get_health_score(graph: Any = None) -> dict[str, Any]:
     svc_count_res = _execute_query(
         graph, "MATCH (s:Service) RETURN count(s)", {}, "health_total_services"
     )
-    total_services = int(svc_count_res.result_set[0][0]) if svc_count_res.result_set else 0
+    total_services = (
+        int(svc_count_res.result_set[0][0]) if svc_count_res.result_set else 0
+    )
 
     owned_count_res = _execute_query(
-        graph, "MATCH (:Team)-[:OWNS]->(s:Service) RETURN count(DISTINCT s)", {}, "health_owned_services"
+        graph,
+        "MATCH (:Team)-[:OWNS]->(s:Service) RETURN count(DISTINCT s)",
+        {},
+        "health_owned_services",
     )
-    owned_services = int(owned_count_res.result_set[0][0]) if owned_count_res.result_set else 0
+    owned_services = (
+        int(owned_count_res.result_set[0][0]) if owned_count_res.result_set else 0
+    )
 
     dec_count_res = _execute_query(
         graph, "MATCH (d:Decision) RETURN count(d)", {}, "health_total_decisions"
     )
-    total_decisions = int(dec_count_res.result_set[0][0]) if dec_count_res.result_set else 0
+    total_decisions = (
+        int(dec_count_res.result_set[0][0]) if dec_count_res.result_set else 0
+    )
 
     dec_rat_count_res = _execute_query(
         graph,
@@ -632,12 +721,16 @@ def get_health_score(graph: Any = None) -> dict[str, Any]:
         {},
         "health_decisions_with_rationale",
     )
-    decisions_with_rationale = int(dec_rat_count_res.result_set[0][0]) if dec_rat_count_res.result_set else 0
+    decisions_with_rationale = (
+        int(dec_rat_count_res.result_set[0][0]) if dec_rat_count_res.result_set else 0
+    )
 
     inc_count_res = _execute_query(
         graph, "MATCH (inc:Incident) RETURN count(inc)", {}, "health_total_incidents"
     )
-    total_incidents = int(inc_count_res.result_set[0][0]) if inc_count_res.result_set else 0
+    total_incidents = (
+        int(inc_count_res.result_set[0][0]) if inc_count_res.result_set else 0
+    )
 
     inc_res_count_res = _execute_query(
         graph,
@@ -645,7 +738,9 @@ def get_health_score(graph: Any = None) -> dict[str, Any]:
         {},
         "health_resolved_incidents",
     )
-    resolved_incidents = int(inc_res_count_res.result_set[0][0]) if inc_res_count_res.result_set else 0
+    resolved_incidents = (
+        int(inc_res_count_res.result_set[0][0]) if inc_res_count_res.result_set else 0
+    )
 
     doc_svc_count_res = _execute_query(
         graph,
@@ -653,7 +748,9 @@ def get_health_score(graph: Any = None) -> dict[str, Any]:
         {},
         "health_documented_services",
     )
-    documented_services = int(doc_svc_count_res.result_set[0][0]) if doc_svc_count_res.result_set else 0
+    documented_services = (
+        int(doc_svc_count_res.result_set[0][0]) if doc_svc_count_res.result_set else 0
+    )
 
     # Ratios
     r_owned = (owned_services / total_services) if total_services > 0 else 1.0
@@ -687,18 +784,14 @@ def get_health_score(graph: Any = None) -> dict[str, Any]:
     }
 
 
-def get_service_dependents(
-    service_id: str, graph: Any = None
-) -> list[dict[str, Any]]:
+def get_service_dependents(service_id: str, graph: Any = None) -> list[dict[str, Any]]:
     """Return all services that directly depend on service_id."""
     cypher = (
         "MATCH (dep:Service)-[:DEPENDS_ON]->(s:Service {id: $sid}) "
         "RETURN dep "
         f"LIMIT {QUERY_LIMIT}"
     )
-    res = _execute_query(
-        graph, cypher, {"sid": service_id}, "get_service_dependents"
-    )
+    res = _execute_query(graph, cypher, {"sid": service_id}, "get_service_dependents")
     return [_unpack_node(row[0]) for row in res.result_set]
 
 
