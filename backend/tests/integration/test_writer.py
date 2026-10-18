@@ -263,13 +263,9 @@ def test_property_collision_defense_live(writer_graph: Any) -> None:
     upsert_node(malicious, graph=writer_graph)
 
     # Node must exist with real-auth, not fake-spoofed
-    real = writer_graph.query(
-        "MATCH (n {id: 'service:real-auth'}) RETURN n.tech"
-    )
+    real = writer_graph.query("MATCH (n {id: 'service:real-auth'}) RETURN n.tech")
     assert len(real.result_set) == 1
     assert real.result_set[0][0] == "FastAPI"
 
-    fake = writer_graph.query(
-        "MATCH (n {id: 'service:fake-spoofed'}) RETURN count(n)"
-    )
+    fake = writer_graph.query("MATCH (n {id: 'service:fake-spoofed'}) RETURN count(n)")
     assert fake.result_set[0][0] == 0

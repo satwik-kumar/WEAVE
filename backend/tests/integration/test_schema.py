@@ -20,7 +20,9 @@ from weave_brain.graph.schema import (
 
 
 @pytest.fixture
-def isolated_schema_graph(monkeypatch: pytest.MonkeyPatch) -> Generator[Any, None, None]:
+def isolated_schema_graph(
+    monkeypatch: pytest.MonkeyPatch,
+) -> Generator[Any, None, None]:
     """Provide an isolated temporary FalkorDB graph for schema initialization testing."""
     if not os.getenv("FALKORDB_AVAILABLE"):
         pytest.skip("FalkorDB integration test requires FALKORDB_AVAILABLE=1")

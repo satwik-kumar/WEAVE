@@ -17,34 +17,38 @@ from weave_brain.graph.schema import (
 )
 
 # 14 Canonical relationship types frozen in docs/graph-schema.md
-WHITELISTED_RELATIONSHIPS: frozenset[str] = frozenset({
-    "OWNS",
-    "MEMBER_OF",
-    "MAINTAINS",
-    "DEPENDS_ON",
-    "IMPLEMENTED_IN",
-    "CONTAINS",
-    "IMPORTS",
-    "DECIDES_FOR",
-    "MOTIVATED_BY",
-    "SUPERSEDES",
-    "DOCUMENTS",
-    "AFFECTS",
-    "WORKED_ON",
-    "USES",
-})
+WHITELISTED_RELATIONSHIPS: frozenset[str] = frozenset(
+    {
+        "OWNS",
+        "MEMBER_OF",
+        "MAINTAINS",
+        "DEPENDS_ON",
+        "IMPLEMENTED_IN",
+        "CONTAINS",
+        "IMPORTS",
+        "DECIDES_FOR",
+        "MOTIVATED_BY",
+        "SUPERSEDES",
+        "DOCUMENTS",
+        "AFFECTS",
+        "WORKED_ON",
+        "USES",
+    }
+)
 
-RESERVED_NODE_KEYS: frozenset[str] = frozenset({
-    "id",
-    "canonical_id",
-    "title",
-    "source_id",
-    "source_type",
-    "ingested_at",
-    "source_url",
-    "content_hash",
-    "source_updated_at",
-})
+RESERVED_NODE_KEYS: frozenset[str] = frozenset(
+    {
+        "id",
+        "canonical_id",
+        "title",
+        "source_id",
+        "source_type",
+        "ingested_at",
+        "source_url",
+        "content_hash",
+        "source_updated_at",
+    }
+)
 
 
 def _sanitize_value(value: Any) -> Any:
@@ -92,9 +96,7 @@ def normalize_relationship(
     if not isinstance(target_id, str) or not target_id.strip():
         raise ValueError("Relationship target_id must be a non-empty string.")
 
-    clean_props = {
-        k: _sanitize_value(v) for k, v in raw_props.items() if v is not None
-    }
+    clean_props = {k: _sanitize_value(v) for k, v in raw_props.items() if v is not None}
     return (rel_type, target_id.strip(), clean_props)
 
 
@@ -125,9 +127,7 @@ def prepare_node_properties(artifact: SourceArtifact) -> dict[str, Any]:
     if artifact.content_hash is not None:
         clean_props["content_hash"] = artifact.content_hash
     if artifact.source_updated_at is not None:
-        clean_props["source_updated_at"] = (
-            artifact.source_updated_at.isoformat()
-        )
+        clean_props["source_updated_at"] = artifact.source_updated_at.isoformat()
 
     return clean_props
 
@@ -156,9 +156,7 @@ def upsert_node(
     props = prepare_node_properties(artifact)
 
     query = f"MERGE (n:{label} {{id: $id}}) SET n += $props RETURN n.id"
-    res = active_graph.query(
-        query, {"id": artifact.canonical_id, "props": props}
-    )
+    res = active_graph.query(query, {"id": artifact.canonical_id, "props": props})
 
     nodes_created = getattr(res, "nodes_created", 0)
     return bool(nodes_created and nodes_created > 0)
@@ -198,9 +196,7 @@ def upsert_relationship(
     )
 
     clean_props = {
-        k: _sanitize_value(v)
-        for k, v in (properties or {}).items()
-        if v is not None
+        k: _sanitize_value(v) for k, v in (properties or {}).items() if v is not None
     }
 
     query = (

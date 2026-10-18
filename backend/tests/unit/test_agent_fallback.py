@@ -93,7 +93,65 @@ def _sample_decision_evidence() -> dict:
                     "relationship_type": "SUPERSEDES",
                 },
             ],
-            "root_node_ids": ["decision:adr-001", "decision:adr-002", "decision:adr-003"],
+            "root_node_ids": [
+                "decision:adr-001",
+                "decision:adr-002",
+                "decision:adr-003",
+            ],
+        },
+    }
+
+
+def _sample_overview_evidence() -> dict:
+    """Build isolated service overview evidence matching seeded demo graph entities."""
+    return {
+        "service": {
+            "id": "service:authentication-api",
+            "title": "Authentication API",
+            "type": "service",
+            "properties": {"description": "Central auth service"},
+        },
+        "team": {
+            "id": "team:platform-engineering",
+            "title": "Platform Engineering",
+            "type": "team",
+            "properties": {},
+        },
+        "repositories": [
+            {
+                "id": "repository:acme/auth-api",
+                "title": "acme/auth-api",
+                "type": "repository",
+                "properties": {},
+            }
+        ],
+        "decisions": [],
+        "documents": [],
+        "dependents": [],
+        "graph": {
+            "nodes": [
+                {
+                    "id": "service:authentication-api",
+                    "title": "Authentication API",
+                    "type": "service",
+                    "properties": {},
+                },
+                {
+                    "id": "team:platform-engineering",
+                    "title": "Platform Engineering",
+                    "type": "team",
+                    "properties": {},
+                },
+            ],
+            "edges": [
+                {
+                    "id": "team:platform-engineering::OWNS::service:authentication-api",
+                    "source_id": "team:platform-engineering",
+                    "target_id": "service:authentication-api",
+                    "relationship_type": "OWNS",
+                }
+            ],
+            "root_node_ids": ["service:authentication-api"],
         },
     }
 
@@ -106,14 +164,21 @@ def test_gemini_successful_classification_and_answer():
         "The Authentication API is owned by Platform Engineering according to team:platform-engineering.",
     ]
 
-    with patch("weave_brain.agent.orchestrator.get_provider", return_value=mock_provider), patch(
-        "weave_brain.agent.orchestrator.get_settings"
-    ) as mock_settings:
+    mock_overview = _sample_overview_evidence()
+    with (
+        patch(
+            "weave_brain.agent.orchestrator.get_provider", return_value=mock_provider
+        ),
+        patch("weave_brain.agent.orchestrator.get_settings") as mock_settings,
+        patch("weave_brain.agent.orchestrator.call_tool", return_value=mock_overview),
+    ):
         mock_settings.return_value = Settings(
             llm_provider="gemini",
             gemini_api_key=SecretStr("mock-key-secret"),
         )
-        resp = process_question(ChatRequest(question="Who owns the authentication service?"))
+        resp = process_question(
+            ChatRequest(question="Who owns the authentication service?")
+        )
 
         assert resp.warnings == []
         assert resp.intent == "get_service_overview"
@@ -126,20 +191,28 @@ def test_classification_failure_deterministic_fallback():
     # Classifier fails with rate limit, answer succeeds
     mock_provider.complete.side_effect = [
         Exception("HTTP 429 Quota exceeded: https://api.google.com/key=MOCK_SECRET"),
-        "Synthesized answer text according to decision:adr-001.",
+        "The Authentication API is owned by Platform Engineering according to team:platform-engineering.",
     ]
 
-    with patch("weave_brain.agent.orchestrator.get_provider", return_value=mock_provider), patch(
-        "weave_brain.agent.orchestrator.get_settings"
-    ) as mock_settings:
+    mock_overview = _sample_overview_evidence()
+    with (
+        patch(
+            "weave_brain.agent.orchestrator.get_provider", return_value=mock_provider
+        ),
+        patch("weave_brain.agent.orchestrator.get_settings") as mock_settings,
+        patch("weave_brain.agent.orchestrator.call_tool", return_value=mock_overview),
+    ):
         mock_settings.return_value = Settings(
             llm_provider="gemini",
             gemini_api_key=SecretStr("mock-key-secret"),
         )
-        resp = process_question(ChatRequest(question="Who owns the authentication service?"))
+        resp = process_question(
+            ChatRequest(question="Who owns the authentication service?")
+        )
 
         assert "AI classifier unavailable; used deterministic routing." in resp.warnings
         assert resp.intent == "get_service_overview"
+        assert "Platform Engineering" in resp.answer
 
 
 def test_answer_generation_failure_deterministic_fallback():
@@ -148,20 +221,30 @@ def test_answer_generation_failure_deterministic_fallback():
     # Classifier succeeds, answer generation explodes
     mock_provider.complete.side_effect = [
         '{"tool": "get_decisions_for_service", "service_id": "service:authentication-api"}',
-        Exception("Connection timeout to https://generativelanguage.googleapis.com?key=SECRET_TOKEN_LEAK"),
+        Exception(
+            "Connection timeout to https://generativelanguage.googleapis.com?key=SECRET_TOKEN_LEAK"
+        ),
     ]
 
     mock_evidence = _sample_decision_evidence()
-    with patch("weave_brain.agent.orchestrator.get_provider", return_value=mock_provider), patch(
-        "weave_brain.agent.orchestrator.get_settings"
-    ) as mock_settings, patch("weave_brain.agent.orchestrator.call_tool", return_value=mock_evidence):
+    with (
+        patch(
+            "weave_brain.agent.orchestrator.get_provider", return_value=mock_provider
+        ),
+        patch("weave_brain.agent.orchestrator.get_settings") as mock_settings,
+        patch("weave_brain.agent.orchestrator.call_tool", return_value=mock_evidence),
+    ):
         mock_settings.return_value = Settings(
             llm_provider="gemini",
             gemini_api_key=SecretStr("mock-key-secret"),
         )
-        resp = process_question(ChatRequest(question="Why was the token policy chosen?"))
+        resp = process_question(
+            ChatRequest(question="Why was the token policy chosen?")
+        )
 
-        assert "AI answer generation unavailable; used grounded fallback." in resp.warnings
+        assert (
+            "AI answer generation unavailable; used grounded fallback." in resp.warnings
+        )
         assert resp.intent == "get_decisions_for_service"
         assert "Token expiry 24h policy" in resp.answer
         assert "Mitigate risk of stolen long-lived tokens" in resp.answer
@@ -177,18 +260,26 @@ def test_safe_and_visible_warnings_never_leak_secrets():
     ]
 
     mock_evidence = _sample_decision_evidence()
-    with patch("weave_brain.agent.orchestrator.get_provider", return_value=mock_provider), patch(
-        "weave_brain.agent.orchestrator.get_settings"
-    ) as mock_settings, patch("weave_brain.agent.orchestrator.call_tool", return_value=mock_evidence):
+    with (
+        patch(
+            "weave_brain.agent.orchestrator.get_provider", return_value=mock_provider
+        ),
+        patch("weave_brain.agent.orchestrator.get_settings") as mock_settings,
+        patch("weave_brain.agent.orchestrator.call_tool", return_value=mock_evidence),
+    ):
         mock_settings.return_value = Settings(
             llm_provider="gemini",
             gemini_api_key=SecretStr(secret_key),
         )
-        resp = process_question(ChatRequest(question="Why was the token policy chosen?"))
+        resp = process_question(
+            ChatRequest(question="Why was the token policy chosen?")
+        )
 
         assert len(resp.warnings) == 2
         assert "AI classifier unavailable; used deterministic routing." in resp.warnings
-        assert "AI answer generation unavailable; used grounded fallback." in resp.warnings
+        assert (
+            "AI answer generation unavailable; used grounded fallback." in resp.warnings
+        )
 
         # Strict credential leak assertions
         for w in resp.warnings:
@@ -202,7 +293,9 @@ def test_unsupported_decision_citations_trigger_grounded_fallback():
     """Verification that hallucinated decision IDs trigger safe fallback and visible warning."""
     warnings: list[str] = []
     mock_provider = MagicMock(spec=GeminiProvider)
-    mock_provider.complete.return_value = "We selected decision:adr-999 because it looked modern."
+    mock_provider.complete.return_value = (
+        "We selected decision:adr-999 because it looked modern."
+    )
 
     mock_evidence = _sample_decision_evidence()
     ans = generate_answer(
@@ -222,11 +315,14 @@ def test_service_mesh_question_highlighted_paths_and_replacement_evidence_determ
     """Requirement 6: Service-mesh question highlights superseded relationship and presents replacement rationale in deterministic mode."""
     mock_evidence = _sample_decision_evidence()
 
-    with patch("weave_brain.agent.orchestrator.get_settings") as mock_settings, patch(
-        "weave_brain.agent.orchestrator.call_tool", return_value=mock_evidence
+    with (
+        patch("weave_brain.agent.orchestrator.get_settings") as mock_settings,
+        patch("weave_brain.agent.orchestrator.call_tool", return_value=mock_evidence),
     ):
         mock_settings.return_value = Settings(llm_provider="deterministic")
-        resp = process_question(ChatRequest(question="Why did we not choose service mesh?"))
+        resp = process_question(
+            ChatRequest(question="Why did we not choose service mesh?")
+        )
 
         # Both the superseded decision and its replacement are highlighted together
         assert len(resp.highlighted_paths) == 1
@@ -245,18 +341,24 @@ def test_service_mesh_question_highlighted_paths_with_llm():
     mock_provider = MagicMock(spec=GeminiProvider)
     mock_provider.complete.side_effect = [
         '{"tool": "get_decisions_for_service", "service_id": "service:authentication-api"}',
-        'Service mesh adoption (decision:adr-002) was superseded by Envoy proxy standard (decision:adr-003): Standardize Envoy sidecars.',
+        "Service mesh adoption (decision:adr-002) was superseded by Envoy proxy standard (decision:adr-003): Standardize Envoy sidecars.",
     ]
     mock_evidence = _sample_decision_evidence()
 
-    with patch("weave_brain.agent.orchestrator.get_provider", return_value=mock_provider), patch(
-        "weave_brain.agent.orchestrator.get_settings"
-    ) as mock_settings, patch("weave_brain.agent.orchestrator.call_tool", return_value=mock_evidence):
+    with (
+        patch(
+            "weave_brain.agent.orchestrator.get_provider", return_value=mock_provider
+        ),
+        patch("weave_brain.agent.orchestrator.get_settings") as mock_settings,
+        patch("weave_brain.agent.orchestrator.call_tool", return_value=mock_evidence),
+    ):
         mock_settings.return_value = Settings(
             llm_provider="gemini",
             gemini_api_key=SecretStr("mock-key-secret"),
         )
-        resp = process_question(ChatRequest(question="Why did we not choose service mesh?"))
+        resp = process_question(
+            ChatRequest(question="Why did we not choose service mesh?")
+        )
 
         assert len(resp.highlighted_paths) == 1
         assert resp.highlighted_paths[0] == ["decision:adr-002", "decision:adr-003"]
@@ -268,7 +370,10 @@ def test_service_mesh_question_highlighted_paths_with_llm():
 def test_service_mesh_question_prompt_rule_guidance():
     """Requirement 6: Prompt includes rule 8 guiding LLM to mention replacement decision and rationale."""
     assert "8. If a decision is superseded" in ANSWER_SYSTEM
-    assert "mention the replacement decision (its title, source_id, and rationale if available)" in ANSWER_SYSTEM
+    assert (
+        "mention the replacement decision (its title, source_id, and rationale if available)"
+        in ANSWER_SYSTEM
+    )
 
 
 def test_service_mesh_question_when_replacement_rationale_genuinely_absent():
@@ -301,7 +406,9 @@ def test_response_schema_compatibility_and_validation():
     dumped = resp.model_dump()
     assert dumped["message_id"] == "test-mid"
     assert dumped["answer"] == "Sample answer"
-    assert dumped["warnings"] == ["AI answer generation unavailable; used grounded fallback."]
+    assert dumped["warnings"] == [
+        "AI answer generation unavailable; used grounded fallback."
+    ]
 
     # Round-trip validation
     reloaded = ChatResponse.model_validate(dumped)

@@ -20,27 +20,29 @@ from weave_brain.graph.writer import (
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 DEMO_DIR = REPO_ROOT / "data" / "demo"
 
-OFFICIAL_FROZEN_IDS = frozenset({
-    "service:authentication-api",
-    "service:user-profile-api",
-    "service:notification-service",
-    "service:data-pipeline",
-    "team:platform-engineering",
-    "team:backend-core",
-    "team:data-infra",
-    "person:priya-sharma",
-    "person:james-chen",
-    "person:aisha-kowalski",
-    "person:dev-four",
-    "project:auth-modernization",
-    "decision:adr-001",
-    "decision:adr-002",
-    "decision:adr-003",
-    "incident:inc-007",
-    "ticket:eng-042",
-    "repository:acme/auth-api",
-    "document:auth-runbook",
-})
+OFFICIAL_FROZEN_IDS = frozenset(
+    {
+        "service:authentication-api",
+        "service:user-profile-api",
+        "service:notification-service",
+        "service:data-pipeline",
+        "team:platform-engineering",
+        "team:backend-core",
+        "team:data-infra",
+        "person:priya-sharma",
+        "person:james-chen",
+        "person:aisha-kowalski",
+        "person:dev-four",
+        "project:auth-modernization",
+        "decision:adr-001",
+        "decision:adr-002",
+        "decision:adr-003",
+        "incident:inc-007",
+        "ticket:eng-042",
+        "repository:acme/auth-api",
+        "document:auth-runbook",
+    }
+)
 
 DEMO_FILES = [
     "organization.json",
@@ -169,10 +171,7 @@ def test_intentional_knowledge_gaps():
 
     # Gap 1: service:data-pipeline has NO owner
     all_owns_targets = [
-        edge[1]
-        for a in artifacts
-        for edge in a.relationships
-        if edge[0] == "OWNS"
+        edge[1] for a in artifacts for edge in a.relationships if edge[0] == "OWNS"
     ]
     assert "service:data-pipeline" not in all_owns_targets
 

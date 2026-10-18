@@ -58,7 +58,10 @@ def seeded_graph():
             entity_type="repository",
             canonical_id="repository:acme/auth-api",
             title="acme/auth-api",
-            properties={"url": "https://github.com/acme/auth-api", "language": "Python"},
+            properties={
+                "url": "https://github.com/acme/auth-api",
+                "language": "Python",
+            },
             ingested_at=now,
         ),
         SourceArtifact(
@@ -81,7 +84,11 @@ def seeded_graph():
             entity_type="incident",
             canonical_id="incident:inc-007",
             title="Stolen long-lived token exploited",
-            properties={"severity": "P1", "status": "resolved", "summary": "Credential leak"},
+            properties={
+                "severity": "P1",
+                "status": "resolved",
+                "summary": "Credential leak",
+            },
             relationships=[("AFFECTS", "service:authentication-api")],
             ingested_at=now,
         ),
@@ -238,7 +245,10 @@ def seeded_graph():
             entity_type="decision",
             canonical_id="decision:adr-001",
             title="Token expiry 24h policy",
-            properties={"status": "accepted", "rationale": "Mitigate token theft risks"},
+            properties={
+                "status": "accepted",
+                "rationale": "Mitigate token theft risks",
+            },
             relationships=[
                 ("DECIDES_FOR", "service:authentication-api"),
                 ("MOTIVATED_BY", "incident:inc-007"),
@@ -251,7 +261,10 @@ def seeded_graph():
             entity_type="decision",
             canonical_id="decision:adr-002",
             title="Service mesh adoption",
-            properties={"status": "accepted", "rationale": ""},  # Intentionally empty rationale
+            properties={
+                "status": "accepted",
+                "rationale": "",
+            },  # Intentionally empty rationale
             relationships=[("DECIDES_FOR", "service:authentication-api")],
             ingested_at=now,
         ),
@@ -261,7 +274,10 @@ def seeded_graph():
             entity_type="decision",
             canonical_id="decision:adr-003",
             title="Envoy proxy standard",
-            properties={"status": "accepted", "rationale": "Standardize Envoy sidecars"},
+            properties={
+                "status": "accepted",
+                "rationale": "Standardize Envoy sidecars",
+            },
             relationships=[
                 ("DECIDES_FOR", "service:authentication-api"),
                 ("SUPERSEDES", "decision:adr-002"),
@@ -321,7 +337,9 @@ def test_get_decisions_for_service_live(seeded_graph):
 
 def test_get_blast_radius_live(seeded_graph):
     """Test reverse DEPENDS_ON traversal for blast radius calculation."""
-    res = get_blast_radius("service:authentication-api", max_depth=3, graph=seeded_graph)
+    res = get_blast_radius(
+        "service:authentication-api", max_depth=3, graph=seeded_graph
+    )
     affected_ids = [s["id"] for s in res["affected_services"]]
     assert "service:user-profile-api" in affected_ids
     assert "service:notification-service" in affected_ids
@@ -377,7 +395,9 @@ def test_get_knowledge_gaps_and_health_score_live(seeded_graph):
     health = get_health_score(graph=seeded_graph)
     assert 0.0 <= health["health_score"] <= 100.0
     assert health["metrics"]["services_owned"] == 0.75  # 3 of 4 services owned
-    assert health["metrics"]["decisions_rationale"] == 0.67  # 2 of 3 decisions have rationale
+    assert (
+        health["metrics"]["decisions_rationale"] == 0.67
+    )  # 2 of 3 decisions have rationale
     assert health["metrics"]["incidents_resolved"] == 1.0  # 1 of 1 resolved
 
 

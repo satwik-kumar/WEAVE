@@ -125,7 +125,9 @@ def test_get_client_invalid_port_raises(monkeypatch: pytest.MonkeyPatch) -> None
 def test_get_graph_forwards_credentials() -> None:
     """Verify get_graph forwards credentials and selects the named graph."""
     mock_client = MagicMock()
-    with patch("weave_brain.graph.client.get_client", return_value=mock_client) as mock_gc:
+    with patch(
+        "weave_brain.graph.client.get_client", return_value=mock_client
+    ) as mock_gc:
         graph = get_graph(
             graph_name="prod_graph",
             host="prod.db",

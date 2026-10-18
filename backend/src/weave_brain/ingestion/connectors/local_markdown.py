@@ -33,7 +33,7 @@ def _extract_frontmatter(content: str) -> tuple[dict[str, Any], str]:
         return metadata, remaining_body
 
     frontmatter_lines = lines[1:closing_idx]
-    remaining_body = "\n".join(lines[closing_idx + 1:]).strip()
+    remaining_body = "\n".join(lines[closing_idx + 1 :]).strip()
 
     current_list_key: str | None = None
     for line in frontmatter_lines:
@@ -79,9 +79,7 @@ def _extract_frontmatter(content: str) -> tuple[dict[str, Any], str]:
     return metadata, remaining_body
 
 
-def _extract_title_and_excerpt(
-    body: str, fallback_title: str
-) -> tuple[str, str]:
+def _extract_title_and_excerpt(body: str, fallback_title: str) -> tuple[str, str]:
     """Extract first # header as title and first prose paragraph as excerpt."""
     title = fallback_title
     lines = body.splitlines()
@@ -138,9 +136,7 @@ def parse_markdown_file(
 
     # Determine canonical ID
     slug = file_path.stem.lower().replace("_", "-")
-    canonical_id = str(
-        frontmatter.get("canonical_id") or f"{entity_type}:{slug}"
-    )
+    canonical_id = str(frontmatter.get("canonical_id") or f"{entity_type}:{slug}")
 
     # Properties
     properties: dict[str, Any] = {}
@@ -175,7 +171,8 @@ def parse_markdown_file(
 
     source_id = str(frontmatter.get("source_id") or file_path.stem)
     source_type = str(
-        frontmatter.get("source_type") or ("adr" if entity_type == "decision" else "markdown")
+        frontmatter.get("source_type")
+        or ("adr" if entity_type == "decision" else "markdown")
     )
     source_url = frontmatter.get("source_url")
 

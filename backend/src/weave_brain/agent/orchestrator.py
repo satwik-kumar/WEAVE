@@ -129,7 +129,9 @@ def classify_question(
         except Exception as e:  # noqa: BLE001
             logger.warning("LLM Classifier fallback (%s)", e)
             if warnings is not None:
-                warnings.append("AI classifier unavailable; used deterministic routing.")
+                warnings.append(
+                    "AI classifier unavailable; used deterministic routing."
+                )
 
     return classify_question_deterministic(question)
 
