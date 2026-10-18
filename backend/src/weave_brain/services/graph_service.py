@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from collections import deque
-from copy import deepcopy
 from typing import Any
 
 from fastapi import HTTPException
@@ -137,14 +136,12 @@ class GraphService:
 
     def overview(self, service_id: str) -> ServiceOverview:
         if self.settings.development_fixtures:
-            if service_id != AUTH:
-                raise HTTPException(404, "Service not found.")
-            raw = fixtures.get_service_overview_stub(service_id)
+            raw = fixtures.get_catalog_overview_stub(service_id)
         else:
             raw = queries.get_service_overview(service_id, graph=self._graph())
         if not raw:
             raise HTTPException(404, "Service not found.")
-        view = bounded_view(raw)
+        view = bounded_view(raw.get("graph", raw))
         if self.settings.development_fixtures:
             view.warning = "Development fixture data."
         nodes = {node.id: node for node in view.nodes}
@@ -191,14 +188,7 @@ class GraphService:
 
     def neighborhood(self, node_id: str, depth: int) -> GraphView:
         if self.settings.development_fixtures:
-            if node_id not in FIXTURE_ENTITIES:
-                raise HTTPException(404, "Entity not found.")
-            auth_raw = fixtures.get_neighborhood_stub(AUTH, depth)
-            if any(n["id"] == node_id for n in auth_raw.get("nodes", [])):
-                raw = deepcopy(auth_raw)
-                raw["root_node_ids"] = [node_id]
-            else:
-                raw = fixtures.get_neighborhood_stub(node_id, depth)
+            raw = fixtures.get_catalog_neighborhood_stub(node_id, depth)
         else:
             raw = queries.get_neighborhood(node_id, depth, graph=self._graph())
         view = bounded_view(raw)
@@ -209,12 +199,11 @@ class GraphService:
         return view
 
     def blast(self, service_id: str, depth: int) -> BlastRadius:
-        if self.settings.development_fixtures:
-            if service_id != AUTH:
-                raise HTTPException(404, "Service not found.")
-            raw = fixtures.get_blast_radius_stub(service_id)
-        else:
-            raw = queries.get_blast_radius(service_id, depth, graph=self._graph())
+        raw = (
+            fixtures.get_catalog_blast_stub(service_id, depth)
+            if self.settings.development_fixtures
+            else queries.get_blast_radius(service_id, depth, graph=self._graph())
+        )
         view = bounded_view(raw)
         if service_id not in {node.id for node in view.nodes}:
             raise HTTPException(404, "Service not found.")
@@ -235,12 +224,11 @@ class GraphService:
 
     def decisions(self, service_id: str) -> Retrieval:
         overview = self.overview(service_id)
-        if self.settings.development_fixtures:
-            if service_id != AUTH:
-                raise HTTPException(404, "Service not found.")
-            raw = fixtures.get_decisions_for_service_stub(service_id)
-        else:
-            raw = queries.get_decisions_for_service(service_id, graph=self._graph())
+        raw = (
+            fixtures.get_catalog_decisions_stub(service_id)
+            if self.settings.development_fixtures
+            else queries.get_decisions_for_service(service_id, graph=self._graph())
+        )
         # Include the retrieved service before mapping DECIDES_FOR endpoints.
         raw["service"] = overview.service.model_dump()
         if (
@@ -265,12 +253,11 @@ class GraphService:
 
     def experts(self, service_id: str) -> Retrieval:
         self.overview(service_id)
-        if self.settings.development_fixtures:
-            if service_id != AUTH:
-                raise HTTPException(404, "Service not found.")
-            raw = fixtures.find_experts_stub(service_id)
-        else:
-            raw = queries.find_experts(service_id, graph=self._graph())
+        raw = (
+            fixtures.find_catalog_experts_stub(service_id)
+            if self.settings.development_fixtures
+            else queries.find_experts(service_id, graph=self._graph())
+        )
         nodes = bounded_view({"nodes": raw}).nodes
         view = self.neighborhood(service_id, 3)
         view = bounded_view(
@@ -362,16 +349,7 @@ class GraphService:
 
     def search(self, query: str) -> list[GraphNode]:
         if self.settings.development_fixtures:
-            raw_overview = fixtures.get_service_overview_stub()
-            raw_neigh = fixtures.get_neighborhood_stub()
-            combined_nodes = {
-                n["id"]: n
-                for n in [
-                    *raw_overview.get("graph", {}).get("nodes", []),
-                    *raw_neigh.get("nodes", []),
-                ]
-            }
-            nodes = bounded_view({"nodes": list(combined_nodes.values())}).nodes
+            nodes = bounded_view(fixtures.get_catalog_stub()).nodes
             return [n for n in nodes if query.lower() in (n.id + " " + n.title).lower()]
         raw = queries.search_entities(query, graph=self._graph())
         return bounded_view({"nodes": raw}).nodes

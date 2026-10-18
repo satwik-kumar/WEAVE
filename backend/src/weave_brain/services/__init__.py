@@ -9,6 +9,7 @@ from weave_brain.services.graph_service import (
     ShortestPath,
 )
 from weave_brain.services.report_service import (
+    ReportService,
     build_health_score,
     build_onboarding_brief,
 )
@@ -16,6 +17,7 @@ from weave_brain.services.report_service import (
 __all__ = [
     "BlastRadius",
     "GraphService",
+    "ReportService",
     "Retrieval",
     "ServiceOverview",
     "ShortestPath",
