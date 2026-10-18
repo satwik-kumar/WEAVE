@@ -8,6 +8,8 @@ interface Message {
   response: ChatResponse;
 }
 interface ChatState {
+  draft: string;
+  setDraft: (draft: string) => void;
   messages: Message[];
   loading: boolean;
   error: string;
@@ -16,6 +18,8 @@ interface ChatState {
 }
 
 export const useChatStore = create<ChatState>((set, get) => ({
+  draft: "",
+  setDraft: (draft) => set({ draft }),
   messages: [],
   loading: false,
   error: "",

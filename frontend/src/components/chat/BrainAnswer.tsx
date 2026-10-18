@@ -5,6 +5,7 @@ import Markdown from "react-markdown";
 import type { ChatResponse } from "../../types/api";
 import { EvidenceList } from "./EvidenceList";
 import { safeUrl } from "../../api/safeUrl";
+import { CopyButton } from "../CopyButton";
 
 export function BrainAnswer({ response }: { response: ChatResponse }) {
   return (
@@ -31,6 +32,9 @@ export function BrainAnswer({ response }: { response: ChatResponse }) {
         >
           {response.answer}
         </Markdown>
+      </div>
+      <div className="answer-actions">
+        <CopyButton text={response.answer} label="Copy answer" />
       </div>
       {(response.warnings ?? []).map((warning, i) => (
         <p className="notice" key={i}>

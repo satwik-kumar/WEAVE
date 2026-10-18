@@ -19,6 +19,14 @@ export function ThemeControl() {
             ? "dark"
             : "light"
           : preference;
+      document
+        .querySelector('meta[name="theme-color"]')
+        ?.setAttribute(
+          "content",
+          getComputedStyle(document.documentElement)
+            .getPropertyValue("--bg")
+            .trim(),
+        );
     };
     apply();
     query.addEventListener("change", apply);
@@ -34,7 +42,16 @@ export function ThemeControl() {
   }, [preference]);
   return (
     <label className="theme-control">
-      <Icon name="sun" size={16} />
+      <Icon
+        name={
+          preference === "dark"
+            ? "moon"
+            : preference === "system"
+              ? "system"
+              : "sun"
+        }
+        size={16}
+      />
       <span>Theme</span>
       <select
         aria-label="Color theme"

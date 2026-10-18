@@ -7,6 +7,7 @@ import { EvidenceList } from "../components/chat/EvidenceList";
 import { DecisionTimeline } from "../components/entities/DecisionTimeline";
 import { GraphCanvas } from "../components/graph/GraphCanvas";
 import { useGraphStore } from "../store/graphStore";
+import { Icon } from "../components/Icon";
 
 export function OnboardingPage() {
   useEffect(() => {
@@ -82,9 +83,28 @@ export function OnboardingPage() {
             <h3>People to talk to</h3>
             {brief.top_experts.length ? (
               brief.top_experts.map((n) => (
-                <p key={n.id}>
-                  <strong>{n.title}</strong> <code>{n.id}</code>
-                </p>
+                <button
+                  className="expert-card"
+                  key={n.id}
+                  onClick={() => {
+                    if (brief.graph?.nodes.some((node) => node.id === n.id)) {
+                      useGraphStore.getState().replace(brief.graph);
+                      useGraphStore.getState().select(n.id);
+                    }
+                  }}
+                  disabled={
+                    !brief.graph?.nodes.some((node) => node.id === n.id)
+                  }
+                >
+                  <span className="expert-avatar">
+                    <Icon name="person" size={18} />
+                  </span>
+                  <span>
+                    <strong>{n.title}</strong>
+                    <small>{n.id}</small>
+                  </span>
+                  <Icon name="arrow" size={14} />
+                </button>
               ))
             ) : (
               <p>No experts recorded.</p>

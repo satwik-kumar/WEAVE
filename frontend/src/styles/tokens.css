@@ -1,8 +1,8 @@
 :root {
   color-scheme: light;
-  --bg: #edeee9;
-  --canvas: #edeee9;
-  --canvas-dot: #cbd0c5;
+  --bg: #f2f3f0;
+  --canvas: #f5f6f3;
+  --canvas-dot: #d5d9d0;
   --surface: #ffffff;
   --surface-soft: #f5f6f3;
   --surface-raised: #ffffff;
@@ -29,10 +29,12 @@
   --error-bg: #fff0ed;
   --error-text: #923c30;
   --error-border: #edc5bd;
-  --badge-bg: #d5f59b;
+  --badge-bg: #e9f0dd;
   --badge-text: #354624;
   --tooltip-bg: #2b3029;
   --tooltip-text: #ffffff;
+  --chrome: #ffffffed;
+  --surface-shadow: 0 2px 8px #20281d04, 0 0 0 1px #20281d08;
   --entity-service: #2563ad;
   --entity-team: #7443ad;
   --entity-person: #187751;
@@ -55,13 +57,13 @@
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #1d211c;
-  --canvas: #252a23;
-  --canvas-dot: #41483c;
-  --surface: #181c17;
-  --surface-soft: #22271f;
-  --surface-raised: #2a3026;
-  --surface-hover: #333b2c;
+  --bg: #191c19;
+  --canvas: #1c201c;
+  --canvas-dot: #383f35;
+  --surface: #222622;
+  --surface-soft: #2b3029;
+  --surface-raised: #30362d;
+  --surface-hover: #373e32;
   --text: #edf0e8;
   --muted: #b1baa8;
   --subtle: #9ca792;
@@ -75,7 +77,7 @@
   --edge: #78876b;
   --edge-focus: #bfdc8e;
   --edge-label: #c7d2bb;
-  --node-bg: #20261c;
+  --node-bg: #272d24;
   --node-border: #5a674e;
   --node-shadow: 0 4px 12px #00000018;
   --panel-shadow: 0 16px 36px #00000040;
@@ -84,10 +86,12 @@
   --error-bg: #382622;
   --error-text: #f3b9a9;
   --error-border: #7f4a3c;
-  --badge-bg: #c8ec95;
-  --badge-text: #29391e;
+  --badge-bg: #34402a;
+  --badge-text: #d2e6b9;
   --tooltip-bg: #e7eddc;
   --tooltip-text: #25301e;
+  --chrome: #222622ed;
+  --surface-shadow: 0 2px 8px #00000010, 0 0 0 1px #ffffff09;
   --entity-service: #8ab8f3;
   --entity-team: #c2a2f0;
   --entity-person: #81d2a7;

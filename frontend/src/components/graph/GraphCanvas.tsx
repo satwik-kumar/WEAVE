@@ -61,6 +61,29 @@ const nodeTypes = { entity: EntityNode };
 
 function Canvas() {
   const state = useGraphStore();
+  const [expanded, setExpanded] = useState(false);
+  const panelRef = useRef<HTMLElement>(null);
+  const camera = useRef({ version: -1, focus: state.focus, targeted: false });
+  useEffect(() => {
+    if (!expanded) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const siblings = [
+      ...document.querySelectorAll<HTMLElement>(
+        ".app-sidebar, .app-header, .chat-panel, .report-content, .skip-link",
+      ),
+    ];
+    const previous = siblings.map((element) => element.inert);
+    siblings.forEach((element) => {
+      element.inert = true;
+    });
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      siblings.forEach((element, i) => {
+        element.inert = previous[i];
+      });
+    };
+  }, [expanded]);
   const [added, setAdded] = useState({ version: -1, ids: new Set<string>() });
   useEffect(() => {
     if (!added.ids.size) return;
@@ -71,6 +94,7 @@ function Canvas() {
     return () => clearTimeout(timer);
   }, [added]);
   const loading = useChatStore((s) => s.loading);
+  const answered = useChatStore((s) => s.messages.length > 0);
   const reduced = useReducedMotion();
   const [compact, setCompact] = useState(window.innerWidth <= 760);
   const [failure, setFailure] = useState({ message: "", version: -1 });
@@ -119,7 +143,9 @@ function Canvas() {
       setCompact(window.innerWidth <= 760);
       clearTimeout(timer);
       timer = setTimeout(() => {
-        const focus = useGraphStore.getState().focus;
+        const focus = camera.current.targeted
+          ? useGraphStore.getState().focus
+          : [];
         void flow.fitView({
           ...(focus.length ? { nodes: focus.map((id) => ({ id })) } : {}),
           padding: window.innerWidth <= 760 ? 0.04 : 0.18,
@@ -139,6 +165,7 @@ function Canvas() {
       if (event.key === "Escape") {
         setMenu(null);
         setConnectionFrom(null);
+        if (!useGraphStore.getState().selected) setExpanded(false);
       }
     };
     window.addEventListener("keydown", escape);
@@ -227,21 +254,44 @@ function Canvas() {
     state.version,
   ]);
   useEffect(() => {
+    const previous = camera.current;
+    if (previous.version !== state.version) previous.targeted = false;
+    else if (previous.focus !== state.focus)
+      previous.targeted = state.focus.length > 0;
+    previous.version = state.version;
+    previous.focus = state.focus;
+  }, [state.version, state.focus]);
+  useEffect(() => {
     if (!nodesInitialized) return;
-    const timer = setTimeout(
-      () =>
-        flow.fitView({
-          ...(state.focus.length
-            ? { nodes: state.focus.map((id) => ({ id })) }
-            : {}),
-          padding: state.focus.length ? 0.5 : compact ? 0.04 : 0.25,
-          minZoom: compact ? 0.8 : 0.15,
-          maxZoom: 1,
-        }),
-      80,
-    );
+    const focus = camera.current.targeted ? state.focus : [];
+    const timer = setTimeout(() => {
+      const target = focus.length === 1 ? flow.getNode(focus[0]) : undefined;
+      if (target && !compact) {
+        return flow.setCenter(
+          target.position.x +
+            100 +
+            Math.min(180, (canvasRef.current?.clientWidth ?? 0) * 0.25),
+          target.position.y + 54,
+          { zoom: 1 },
+        );
+      }
+      return flow.fitView({
+        ...(focus.length ? { nodes: focus.map((id) => ({ id })) } : {}),
+        padding: focus.length ? 0.3 : compact ? 0.04 : 0.12,
+        minZoom: focus.length === 1 ? 1 : compact ? 0.8 : 0.15,
+        maxZoom: 1,
+      });
+    }, 80);
     return () => clearTimeout(timer);
-  }, [state.graph, state.hidden, state.focus, flow, nodesInitialized, compact]);
+  }, [
+    state.graph,
+    state.hidden,
+    state.focus,
+    state.version,
+    flow,
+    nodesInitialized,
+    compact,
+  ]);
 
   async function expand(id: string) {
     const snapshot = useGraphStore.getState();
@@ -306,7 +356,30 @@ function Canvas() {
     }
   }
   return (
-    <section className="graph-panel" aria-label="Knowledge graph">
+    <section
+      ref={panelRef}
+      className={`graph-panel ${expanded ? "is-expanded" : ""}`}
+      aria-label="Knowledge graph"
+      role={expanded ? "dialog" : undefined}
+      aria-modal={expanded ? true : undefined}
+      onKeyDown={(event) => {
+        if (!expanded || event.key !== "Tab") return;
+        const controls = [
+          ...panelRef.current!.querySelectorAll<HTMLElement>(
+            'button:not(:disabled), input:not(:disabled), a[href], [tabindex="0"]',
+          ),
+        ].filter((element) => element.getClientRects().length > 0);
+        const first = controls[0],
+          last = controls.at(-1);
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }}
+    >
       <div className="panel-heading">
         <div>
           <h2>
@@ -317,7 +390,10 @@ function Canvas() {
           {nodes.length} entities · {edges.length} relationships
         </span>
       </div>
-      <GraphToolbar />
+      <GraphToolbar
+        expanded={expanded}
+        onToggleExpanded={() => setExpanded((value) => !value)}
+      />
       {connectionFrom && (
         <p className="connection-notice">
           From {connectionFrom}: select another entity.{" "}
@@ -359,8 +435,8 @@ function Canvas() {
             }}
             style={{
               transformOrigin: "top left",
-              left: Math.min(menu.x, window.innerWidth - 220),
-              top: Math.min(menu.y, window.innerHeight - 80),
+              left: Math.max(8, Math.min(menu.x, window.innerWidth - 220)),
+              top: Math.max(8, Math.min(menu.y, window.innerHeight - 80)),
             }}
           >
             <button role="menuitem" onClick={() => beginConnection(menu.id)}>
@@ -448,11 +524,19 @@ function Canvas() {
             <span className="empty-graph-icon">
               <Icon name="graph" size={32} />
             </span>
-            <strong>Context, connected.</strong>
-            <br />
+            <strong>
+              {state.graph.nodes.length
+                ? "No entities visible"
+                : answered && state.context === "ask"
+                  ? "No graph evidence returned"
+                  : "Context, connected."}
+            </strong>
             <small>
-              Ask a question to explore the people, services and decisions
-              behind your answer.
+              {state.graph.nodes.length
+                ? "Use the entity filters above to bring your graph back into view."
+                : answered && state.context === "ask"
+                  ? "This answer has no connected entities. Review its sources or try another question."
+                  : "Ask a question to explore the people, services and decisions behind your answer."}
             </small>
           </div>
         )}
@@ -465,7 +549,7 @@ function Canvas() {
         </span>
         <span>Double-click a node to expand</span>
       </div>
-      <EntityDetailPanel />
+      <EntityDetailPanel onExpand={(id) => void expand(id)} busy={loading} />
     </section>
   );
 }

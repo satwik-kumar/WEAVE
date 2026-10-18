@@ -1,4 +1,11 @@
-import { lazy, Suspense, useEffect, useState, useRef } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useLayoutEffect,
+  useState,
+  useRef,
+} from "react";
 import { useGraphStore } from "../store/graphStore";
 import { useChatStore } from "../store/chatStore";
 import { Icon } from "../components/Icon";
@@ -31,10 +38,34 @@ export function AskBrainPage() {
           last.response.highlighted_paths,
         );
   }, []);
-  const [text, setText] = useState("");
-  const { messages, loading, error, lastQuestion, submitQuestion } =
-    useChatStore();
+  const {
+    draft: text,
+    setDraft: setText,
+    messages,
+    loading,
+    error,
+    lastQuestion,
+    submitQuestion,
+  } = useChatStore();
   const conversation = useRef<HTMLDivElement>(null);
+  const input = useRef<HTMLTextAreaElement>(null);
+  const [atBottom, setAtBottom] = useState(true);
+  useLayoutEffect(() => {
+    const field = input.current;
+    if (!field) return;
+    field.style.height = "auto";
+    field.style.height = `${Math.min(field.scrollHeight, 160)}px`;
+  }, [text]);
+  useEffect(() => {
+    const shortcut = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "/") {
+        event.preventDefault();
+        input.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", shortcut);
+    return () => window.removeEventListener("keydown", shortcut);
+  }, []);
   useEffect(() => {
     const element = conversation.current;
     if (!element) return;
@@ -63,13 +94,25 @@ export function AskBrainPage() {
       <section className="chat-panel">
         <div className="panel-heading">
           <div>
+            <small className="eyebrow">YOUR ENGINEERING KNOWLEDGE</small>
             <h1>Ask Brain</h1>
           </div>
           <span className="badge">
             <Icon name="graph" size={13} /> Evidence-backed
           </span>
         </div>
-        <div className="conversation" aria-live="polite" ref={conversation}>
+        <div
+          className="conversation"
+          aria-live="polite"
+          ref={conversation}
+          onScroll={(event) => {
+            const element = event.currentTarget;
+            setAtBottom(
+              element.scrollHeight - element.scrollTop - element.clientHeight <
+                80,
+            );
+          }}
+        >
           {!messages.length && (
             <div className="welcome">
               <div className="brain-mark">
@@ -84,7 +127,7 @@ export function AskBrainPage() {
                 Explore ownership, decisions and dependencies through connected
                 evidence.
               </p>
-              <h3>Start with a question</h3>
+              <h3>Explore a starting point</h3>
               {questions.map((q) => (
                 <button
                   disabled={loading}
@@ -107,8 +150,11 @@ export function AskBrainPage() {
             </div>
           ))}
           {loading && (
-            <div role="status" className="loading">
-              Retrieving connected evidence…
+            <div className="pending-turn">
+              <p className="user-message">{lastQuestion}</p>
+              <div role="status" className="loading">
+                Retrieving connected evidence…
+              </div>
             </div>
           )}
           {error && (
@@ -125,6 +171,18 @@ export function AskBrainPage() {
             </div>
           )}
         </div>
+        {!atBottom && messages.length > 0 && (
+          <button
+            className="latest-answer"
+            onClick={() => {
+              conversation.current?.scrollTo({
+                top: conversation.current.scrollHeight,
+              });
+            }}
+          >
+            Jump to latest <Icon name="arrow" size={14} />
+          </button>
+        )}
         <form
           className="question-form"
           onSubmit={(event) => {
@@ -139,12 +197,26 @@ export function AskBrainPage() {
           <div>
             <textarea
               id="question"
+              ref={input}
               rows={2}
               maxLength={4000}
               value={text}
               onChange={(e) => setText(e.target.value)}
+              onKeyDown={(event) => {
+                if (
+                  event.key === "Enter" &&
+                  !event.shiftKey &&
+                  !event.nativeEvent.isComposing &&
+                  event.nativeEvent.keyCode !== 229
+                ) {
+                  event.preventDefault();
+                  if (!event.repeat) event.currentTarget.form?.requestSubmit();
+                }
+              }}
               placeholder="Who owns authentication?"
               disabled={loading}
+              enterKeyHint="send"
+              aria-describedby="question-help"
             />
             <button
               aria-label="Ask ↗"
@@ -155,8 +227,12 @@ export function AskBrainPage() {
               <Icon name="arrow" size={17} />
             </button>
           </div>
-          <small>
-            Answers reflect only retrieved records. No conversation memory.
+          <small id="question-help">
+            <span>
+              Enter to send <span aria-hidden="true">·</span> Shift+Enter for a
+              new line
+            </span>
+            <span>No conversation memory</span>
           </small>
         </form>
       </section>
