@@ -58,6 +58,8 @@ def classify_question_deterministic(question: str) -> tuple[str, str]:
         )
     ):
         return "get_blast_radius", service_id
+    if any(k in q_lower for k in ("own", "owner", "owns")):
+        return "get_service_overview", service_id
     if any(
         k in q_lower
         for k in (
