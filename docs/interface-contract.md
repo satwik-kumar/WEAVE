@@ -165,12 +165,27 @@ report = upsert_many(artifacts, graph=graph, source_name="demo_seed")
 **Module:** `weave_brain.graph.client`
 
 ```python
-def get_client(host: str | None = None, port: int | None = None) -> FalkorDB:
+def get_client(
+    host: str | None = None,
+    port: int | None = None,
+    password: str | None = None,
+    username: str | None = None,
+    ssl: bool | None = None,
+) -> FalkorDB:
     """Create a FalkorDB driver client using FALKORDB_HOST and FALKORDB_PORT.
-    Raises: ConfigurationError if environment variables are missing or port is non-integer.
+    Optionally accepts password, username, and ssl parameters (or reads FALKORDB_PASSWORD,
+    FALKORDB_USERNAME, and FALKORDB_SSL).
+    Raises: ConfigurationError if required environment variables are missing or port is non-integer.
     """
 
-def get_graph(graph_name: str | None = None, host: str | None = None, port: int | None = None) -> Any:
+def get_graph(
+    graph_name: str | None = None,
+    host: str | None = None,
+    port: int | None = None,
+    password: str | None = None,
+    username: str | None = None,
+    ssl: bool | None = None,
+) -> Any:
     """Select and return a FalkorDB Graph object using FALKORDB_GRAPH_NAME.
     Raises: ConfigurationError if FALKORDB_GRAPH_NAME is not set.
     """

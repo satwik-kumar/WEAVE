@@ -321,6 +321,7 @@ def generate_answer(
     evidence: dict,
     provider: LLMProvider | None = None,
     tool_name: str | None = None,
+    warnings: list[str] | None = None,
 ) -> str:
     if not evidence:
         logger.warning("Empty evidence for: %s", question)
@@ -342,6 +343,10 @@ def generate_answer(
                     logger.warning(
                         "LLM answer cited unsupported decision IDs. Falling back to grounded synthesis."
                     )
+                    if warnings is not None:
+                        warnings.append(
+                            "AI answer cited unsupported entities; used grounded fallback."
+                        )
                     return synthesize_grounded_answer(
                         question, evidence, tool_name=tool_name
                     )
@@ -352,4 +357,8 @@ def generate_answer(
                 "LLM answer generation failed (%s), falling back to grounded synthesis",
                 e,
             )
+            if warnings is not None:
+                warnings.append(
+                    "AI answer generation unavailable; used grounded fallback."
+                )
     return synthesize_grounded_answer(question, evidence, tool_name=tool_name)

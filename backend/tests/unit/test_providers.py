@@ -164,7 +164,8 @@ def test_gemini_provider_success(mock_post):
     assert "Platform Engineering" in result
     mock_post.assert_called_once()
     url, kwargs = mock_post.call_args
-    assert "key=gemini-mock-key" in url[0]
+    assert "gemini-mock-key" not in url[0]
+    assert kwargs["headers"]["x-goog-api-key"] == "gemini-mock-key"
     assert "system_instruction" in kwargs["json"]
     assert kwargs["json"]["contents"][0]["parts"][0]["text"] == "who owns auth?"
 

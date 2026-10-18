@@ -303,8 +303,11 @@ class GeminiProvider(BaseHTTPProvider):
         if system_text.strip():
             body["system_instruction"] = {"parts": [{"text": system_text.strip()}]}
 
-        url = f"{self.base_url}/models/{self.model}:generateContent?key={self.api_key}"
-        headers = {"Content-Type": "application/json"}
+        url = f"{self.base_url}/models/{self.model}:generateContent"
+        headers = {
+            "Content-Type": "application/json",
+            "x-goog-api-key": self.api_key,
+        }
 
         data = self._post_with_retry(url, headers, body)
         try:

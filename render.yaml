@@ -4,7 +4,7 @@ services:
     runtime: docker
     rootDir: backend
     dockerfilePath: ./Dockerfile
-    healthCheckPath: /api/health
+    healthCheckPath: /api/live
     autoDeploy: false
     envVars:
       - key: DEVELOPMENT_FIXTURES
