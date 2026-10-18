@@ -8,7 +8,7 @@ def suggest_followups(graph: GraphView, intent: str) -> list[str]:
     if intent == "get_service_overview":
         candidates += [
             "What breaks if this service goes down?",
-            "Who has worked on this service before?",
+            "Who are the experts for this service?",
         ]
     elif intent == "get_blast_radius":
         candidates += [

@@ -75,13 +75,17 @@ TOOL_REGISTRY: dict[str, dict] = {
         ),
         "required_params": ["service_id"],
         "fn": lambda service_id: (
-            {"experts": fixtures.find_catalog_experts_stub(service_id)}
+            {
+                "service_id": service_id,
+                "experts": fixtures.find_catalog_experts_stub(service_id),
+                "graph": fixtures.get_catalog_neighborhood_stub(service_id, 3),
+            }
             if get_settings().development_fixtures
-            else (
-                {"experts": find_experts(service_id)}
-                if isinstance(find_experts(service_id), list)
-                else find_experts(service_id)
-            )
+            else {
+                "service_id": service_id,
+                "experts": find_experts(service_id),
+                "graph": get_neighborhood(service_id, 3),
+            }
         ),
     },
     "get_onboarding_brief": {
