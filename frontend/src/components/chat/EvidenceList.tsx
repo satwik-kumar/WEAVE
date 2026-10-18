@@ -18,8 +18,13 @@ export function EvidenceList({
   if (!evidence.length)
     return <p className="muted">No evidence items were returned.</p>;
   return (
-    <div className="evidence">
-      <h3>Sources · {evidence.length}</h3>
+    <details className="evidence" open>
+      <summary>
+        <h3>
+          Sources <span className="count-label">{evidence.length}</span>
+        </h3>
+        <span className="sources-hint">Supporting records</span>
+      </summary>
       {evidence.map((item, i) => (
         <article key={`${item.source_id}-${i}`}>
           <div className="evidence-title">
@@ -51,6 +56,6 @@ export function EvidenceList({
           </div>
         </article>
       ))}
-    </div>
+    </details>
   );
 }

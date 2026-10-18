@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from "react";
 import { BrowserRouter, NavLink, Route, Routes } from "react-router-dom";
 import { AskBrainPage } from "./pages/AskBrainPage";
 import "./App.css";
+import "./styles/workspace.css";
 import { Icon } from "./components/Icon";
 import { ThemeControl } from "./components/ThemeControl";
 
@@ -33,13 +34,21 @@ export default function App() {
   }, []);
   return (
     <BrowserRouter>
+      <a className="skip-link" href="#main-content">
+        Skip to workspace
+      </a>
       <aside className="app-sidebar">
         <NavLink className="brand-symbol" to="/" aria-label="WEAVE home">
           <Icon name="brain" size={25} />
+          <span>
+            WEAVE<small>Company Brain</small>
+          </span>
         </NavLink>
+        <span className="nav-section-label">WORKSPACE</span>
         <nav aria-label="Workspace">
-          <NavLink to="/" aria-label="Ask Brain" title="Ask Brain">
+          <NavLink to="/" end aria-label="Ask Brain" title="Ask Brain">
             <Icon name="chat" />
+            <span className="nav-label">Ask Brain</span>
             <span className="nav-tooltip">Ask Brain</span>
           </NavLink>
           <NavLink
@@ -48,15 +57,20 @@ export default function App() {
             title="Knowledge Health"
           >
             <Icon name="health" />
+            <span className="nav-label">Knowledge Health</span>
             <span className="nav-tooltip">Knowledge Health</span>
           </NavLink>
           <NavLink to="/onboarding" aria-label="Onboarding" title="Onboarding">
             <Icon name="book" />
+            <span className="nav-label">Onboarding</span>
             <span className="nav-tooltip">Onboarding</span>
           </NavLink>
         </nav>
         <span className="sidebar-footer" title="Engineering workspace">
           <Icon name="graph" />
+          <span>
+            Engineering knowledge<small>Connected through evidence</small>
+          </span>
         </span>
       </aside>
       <div className="app-content">
@@ -71,22 +85,30 @@ export default function App() {
           </span>
           <ThemeControl />
         </header>
-        <Suspense fallback={<p role="status">Loading page?</p>}>
-          <Routes>
-            <Route path="/" element={<AskBrainPage />} />
-            <Route path="/health" element={<HealthPage />} />
-            <Route path="/onboarding" element={<OnboardingPage />} />
-            <Route
-              path="*"
-              element={
-                <main className="not-found">
-                  <h1>Page unavailable</h1>
-                  <a href="/">Return to Ask Brain</a>
-                </main>
-              }
-            />
-          </Routes>
-        </Suspense>
+        <div id="main-content" tabIndex={-1}>
+          <Suspense
+            fallback={
+              <p className="loading" role="status">
+                Loading workspace…
+              </p>
+            }
+          >
+            <Routes>
+              <Route path="/" element={<AskBrainPage />} />
+              <Route path="/health" element={<HealthPage />} />
+              <Route path="/onboarding" element={<OnboardingPage />} />
+              <Route
+                path="*"
+                element={
+                  <main className="not-found">
+                    <h1>Page unavailable</h1>
+                    <a href="/">Return to Ask Brain</a>
+                  </main>
+                }
+              />
+            </Routes>
+          </Suspense>
+        </div>
       </div>
     </BrowserRouter>
   );

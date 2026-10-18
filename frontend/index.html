@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="theme-color" content="#f2f3f0" />
     <script>
       (() => {
         let preference = "system";
@@ -16,21 +17,28 @@
               ? "dark"
               : "light"
             : preference;
+        document.querySelector('meta[name="theme-color"]').content =
+          document.documentElement.dataset.theme === "dark"
+            ? "#191c19"
+            : "#f2f3f0";
       })();
     </script>
     <!-- Critical surface color is available before the application CSS loads. -->
     <style>
       html {
-        background: #edeee9;
+        background: #f2f3f0;
         color-scheme: light;
       }
       html[data-theme="dark"] {
-        background: #1d211c;
+        background: #191c19;
         color-scheme: dark;
       }
     </style>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
     <meta
       name="description"
       content="WEAVE connects engineering questions to graph evidence."

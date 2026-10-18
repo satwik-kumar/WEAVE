@@ -163,7 +163,7 @@ test("theme bootstrap, persistence, system updates, keyboard access and reduced 
     await page
       .locator("html")
       .evaluate((element) => getComputedStyle(element).backgroundColor),
-  ).toBe("rgb(29, 33, 28)");
+  ).toBe("rgb(25, 28, 25)");
   release();
   await expect(page.getByLabel("Color theme")).toHaveValue("dark");
   await page.unroute("**/src/main.tsx");
