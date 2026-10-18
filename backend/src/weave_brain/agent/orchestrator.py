@@ -9,7 +9,13 @@ from weave_brain.agent.mapper import (
     tool_result_to_graph_view,
 )
 from weave_brain.agent.prompts import build_classifier_messages
-from weave_brain.agent.provider import LLMProvider, get_provider
+from weave_brain.agent.provider import (
+    DeterministicModeActive,
+    DeterministicProvider,
+    LLMProvider,
+    LLMProviderError,
+    get_provider,
+)
 from weave_brain.agent.suggestions import suggest_followups
 from weave_brain.agent.tools import (
     TOOL_REGISTRY,
@@ -17,6 +23,7 @@ from weave_brain.agent.tools import (
     ToolNotFoundError,
     call_tool,
 )
+from weave_brain.core.config import get_settings
 from weave_brain.domain.models import ChatRequest, ChatResponse
 
 logger = logging.getLogger(__name__)
@@ -123,12 +130,28 @@ def process_question(request: ChatRequest) -> ChatResponse:
     question = request.question
     warnings: list[str] = []
 
+    settings = get_settings()
+    provider: LLMProvider | None = None
+
     try:
-        provider: LLMProvider | None = get_provider()
-    except (OSError, ModuleNotFoundError, ImportError, ValueError) as e:
-        logger.info(
-            "LLM provider unavailable (%s); using deterministic pipeline", e
-        )
+        candidate_provider = get_provider(settings)
+        if isinstance(candidate_provider, DeterministicProvider):
+            # Intentional deterministic operation; no LLM requested and no offline warning
+            logger.info("Deterministic mode active; using deterministic pipeline")
+            provider = None
+        else:
+            provider = candidate_provider
+    except DeterministicModeActive:
+        logger.info("Deterministic mode active; using deterministic pipeline")
+        provider = None
+    except (
+        LLMProviderError,
+        OSError,
+        ModuleNotFoundError,
+        ImportError,
+        ValueError,
+    ) as e:
+        logger.info("LLM provider unavailable (%s); using deterministic pipeline", e)
         provider = None
         warnings.append(f"AI provider offline: {e}")
 

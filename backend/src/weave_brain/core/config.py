@@ -27,10 +27,25 @@ class Settings(BaseSettings):
     falkordb_ssl: bool = False
     falkordb_timeout: float = Field(default=5, gt=0, le=30)
     chat_mode: Literal["retrieval", "agent"] = "retrieval"
-    llm_provider: Literal["openai", "gemini", "anthropic"] = "openai"
+    llm_provider: Literal[
+        "deterministic",
+        "groq",
+        "gemini",
+        "openrouter",
+        "ollama",
+        "anthropic",
+        "openai",
+    ] = "deterministic"
     llm_model: str = ""
     llm_api_key: SecretStr | None = None
-    llm_timeout: float = Field(default=20, gt=0, le=25)
+    llm_base_url: str | None = None
+    llm_timeout: float = Field(default=20, gt=0, le=60)
+    llm_max_retries: int = Field(default=2, ge=0, le=5)
+    groq_api_key: SecretStr | None = None
+    gemini_api_key: SecretStr | None = None
+    openrouter_api_key: SecretStr | None = None
+    anthropic_api_key: SecretStr | None = None
+    openai_api_key: SecretStr | None = None
 
     @field_validator("allowed_origins")
     @classmethod
