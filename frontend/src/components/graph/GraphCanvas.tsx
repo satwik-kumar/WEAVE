@@ -511,9 +511,7 @@ function Canvas() {
             void expand(n.id);
           }}
           onEdgeMouseEnter={(_, e) =>
-            setHover(
-              `${e.source} → ${e.label} → ${e.target}\n${JSON.stringify(e.data?.properties ?? {})}`,
-            )
+            setHover(`${e.source} → ${e.label} → ${e.target}`)
           }
           onEdgeMouseLeave={() => setHover("")}
         >
@@ -547,7 +545,11 @@ function Canvas() {
             ? "Pan to explore · Fit view for overview"
             : "Drag to pan · Scroll to zoom"}
         </span>
-        <span>Double-click a node to expand</span>
+        <span>
+          {connectionFrom
+            ? "Click a node to connect · Esc to cancel"
+            : "Double-click a node to expand"}
+        </span>
       </div>
       <EntityDetailPanel onExpand={(id) => void expand(id)} busy={loading} />
     </section>

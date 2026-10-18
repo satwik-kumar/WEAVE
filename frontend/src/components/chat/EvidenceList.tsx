@@ -3,6 +3,22 @@ import type { EvidenceItem, GraphView } from "../../types/api";
 import { useGraphStore } from "../../store/graphStore";
 import { safeUrl } from "../../api/safeUrl";
 
+const sourceTypeIcon: Record<string, string> = {
+  decision: "decision",
+  incident: "incident",
+  ticket: "ticket",
+  service: "service",
+  team: "team",
+  person: "person",
+  repository: "repository",
+  github: "repository",
+  file: "file",
+  yaml: "file",
+  json: "file",
+  test: "test",
+  project: "project",
+};
+
 export function EvidenceList({
   evidence,
   graph,
@@ -31,7 +47,10 @@ export function EvidenceList({
             <span className="source-number">
               {String(i + 1).padStart(2, "0")}
             </span>
-            <Icon name="document" size={15} />
+            <Icon
+              name={sourceTypeIcon[item.source_type] ?? "document"}
+              size={15}
+            />
             <strong>{item.title}</strong>
           </div>
           <small>

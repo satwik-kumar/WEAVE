@@ -116,7 +116,7 @@ export function AskBrainPage() {
           {!messages.length && (
             <div className="welcome">
               <div className="brain-mark">
-                <Icon name="chat" size={24} />
+                <Icon name="brain" size={24} />
               </div>
               <h2>
                 Less searching.

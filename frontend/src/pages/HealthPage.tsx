@@ -54,7 +54,7 @@ export function HealthPage() {
             <small>FIND THE MISSING CONTEXT</small>
             <h1>Knowledge Health</h1>
           </div>
-          <button onClick={() => void refetch()}>Refresh</button>
+          <button disabled={isFetching} aria-busy={isFetching} onClick={() => void refetch()}>Refresh</button>
         </div>
         {error && (
           <p role="alert" className="error">

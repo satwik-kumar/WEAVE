@@ -10,6 +10,7 @@ export function DecisionTimeline({ serviceId }: { serviceId: string }) {
   } = useQuery({
     queryKey: ["decisions", serviceId],
     queryFn: () => getDecisions(serviceId),
+    staleTime: 60_000,
   });
   const error = failure?.message;
   return (

@@ -473,6 +473,10 @@
   color: var(--muted);
   font-size: 13px;
 }
+@keyframes weave-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.72); }
+}
 .loading::before {
   content: "";
   display: inline-block;
@@ -481,6 +485,11 @@
   margin-right: 10px;
   border-radius: 50%;
   background: var(--accent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .loading::before {
+    animation: weave-pulse 1.4s ease-in-out infinite;
+  }
 }
 .graph-panel {
   position: relative;
