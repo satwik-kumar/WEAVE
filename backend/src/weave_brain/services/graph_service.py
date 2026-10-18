@@ -130,6 +130,11 @@ class GraphService:
                 graph_name=self.settings.falkordb_graph_name,
                 host=self.settings.falkordb_host,
                 port=self.settings.falkordb_port,
+                password=self.settings.falkordb_password.get_secret_value()
+                if self.settings.falkordb_password
+                else None,
+                username=self.settings.falkordb_username,
+                ssl=self.settings.falkordb_ssl,
             )
         except ConfigurationError as exc:
             raise HTTPException(503, f"Database configuration error: {exc}") from exc
