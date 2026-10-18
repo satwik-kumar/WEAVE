@@ -12,6 +12,7 @@ from weave_brain.graph import mapper as graph_mapper
 def tool_result_to_graph_view(
     result: dict,
     highlighted: list[str] | None = None,
+    highlighted_paths: list[list[str]] | None = None,
 ) -> GraphView:
     """Map a tool result dictionary to a GraphView by delegating to graph.mapper.
 
@@ -20,6 +21,12 @@ def tool_result_to_graph_view(
     """
     if not isinstance(result, dict):
         return GraphView(nodes=[], edges=[])
+
+    effective_paths: list[list[str]] | None = (
+        highlighted_paths
+        if highlighted_paths is not None
+        else ([highlighted] if highlighted else None)
+    )
 
     # Composite structure check (e.g., get_onboarding_brief)
     if (
@@ -34,7 +41,9 @@ def tool_result_to_graph_view(
         for key in ("overview", "decisions", "blast_radius"):
             sub = result.get(key)
             if isinstance(sub, dict):
-                sub_gv = tool_result_to_graph_view(sub, highlighted=highlighted)
+                sub_gv = tool_result_to_graph_view(
+                    sub, highlighted=highlighted, highlighted_paths=effective_paths
+                )
                 combined_nodes.extend(sub_gv.nodes)
                 combined_edges.extend(sub_gv.edges)
                 root_node_ids.extend(sub_gv.root_node_ids)
@@ -54,12 +63,12 @@ def tool_result_to_graph_view(
         }
         return graph_mapper.to_graph_view(
             merged_payload,
-            highlighted_paths=[highlighted] if highlighted else None,
+            highlighted_paths=effective_paths,
         )
 
     return graph_mapper.to_graph_view(
         result,
-        highlighted_paths=[highlighted] if highlighted else None,
+        highlighted_paths=effective_paths,
     )
 
 
@@ -92,9 +101,7 @@ def tool_result_to_evidence(tool_name: str, result: dict) -> list[EvidenceItem]:
                             combined_evidence.append(
                                 EvidenceItem(
                                     source_id=iid,
-                                    title=item.get("title")
-                                    or item.get("name")
-                                    or iid,
+                                    title=item.get("title") or item.get("name") or iid,
                                     source_type=item.get("type", "person"),
                                 )
                             )

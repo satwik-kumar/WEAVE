@@ -16,6 +16,11 @@ from weave_brain.agent.provider import (
     LLMProviderError,
     get_provider,
 )
+from weave_brain.agent.ranking import (
+    get_linked_incident,
+    get_supersedes_info,
+    rank_decision_candidates,
+)
 from weave_brain.agent.suggestions import suggest_followups
 from weave_brain.agent.tools import (
     TOOL_REGISTRY,
@@ -164,9 +169,45 @@ def process_question(request: ChatRequest) -> ChatResponse:
         logger.error("Tool failed: %s", e)
         return ChatResponse(message_id=mid, answer=EMPTY, warnings=[str(e)])
 
+    highlighted_paths: list[list[str]] = []
+    if tool_name == "get_decisions_for_service" and isinstance(result, dict):
+        decs = result.get("decisions", [])
+        if decs:
+            ranked, is_specific, _ = rank_decision_candidates(
+                question, decs, graph=result.get("graph")
+            )
+            if is_specific and ranked:
+                for d in ranked:
+                    did = d.get("id") if isinstance(d, dict) else getattr(d, "id", None)
+                    if did:
+                        inc = get_linked_incident(d, graph=result.get("graph"))
+                        inc_id = (
+                            inc.get("id")
+                            if isinstance(inc, dict)
+                            else getattr(inc, "id", None)
+                        )
+                        if inc_id:
+                            # Discrete path representing the MOTIVATED_BY relationship
+                            highlighted_paths.append([did, inc_id])
+                        else:
+                            older_id, _ = get_supersedes_info(
+                                d, graph=result.get("graph")
+                            )
+                            if older_id:
+                                # Discrete path representing the SUPERSEDES relationship
+                                highlighted_paths.append([did, older_id])
+                            else:
+                                highlighted_paths.append([did])
+
     answer = generate_answer(question, result, provider, tool_name=tool_name)
-    graph = tool_result_to_graph_view(result)
+    graph = tool_result_to_graph_view(
+        result,
+        highlighted_paths=highlighted_paths if highlighted_paths else None,
+    )
     evidence = tool_result_to_evidence(tool_name, result)
+    if highlighted_paths:
+        hl_node_ids = {nid for p in highlighted_paths for nid in p}
+        evidence.sort(key=lambda item: 0 if item.source_id in hl_node_ids else 1)
     followups = suggest_followups(graph, tool_name)
 
     return ChatResponse(
@@ -174,6 +215,7 @@ def process_question(request: ChatRequest) -> ChatResponse:
         answer=answer,
         evidence=evidence,
         graph=graph,
+        highlighted_paths=highlighted_paths,
         suggested_followups=followups,
         warnings=warnings,
         intent=tool_name,
