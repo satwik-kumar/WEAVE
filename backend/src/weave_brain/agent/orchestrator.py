@@ -104,7 +104,9 @@ def classify_question_deterministic(question: str) -> tuple[str, str]:
 
 
 def classify_question(
-    question: str, provider: LLMProvider | None = None
+    question: str,
+    provider: LLMProvider | None = None,
+    warnings: list[str] | None = None,
 ) -> tuple[str, str]:
     if provider is not None:
         try:
@@ -126,6 +128,8 @@ def classify_question(
                 )
         except Exception as e:  # noqa: BLE001
             logger.warning("LLM Classifier fallback (%s)", e)
+            if warnings is not None:
+                warnings.append("AI classifier unavailable; used deterministic routing.")
 
     return classify_question_deterministic(question)
 
@@ -160,7 +164,7 @@ def process_question(request: ChatRequest) -> ChatResponse:
         provider = None
         warnings.append(f"AI provider offline: {e}")
 
-    tool_name, service_id = classify_question(question, provider)
+    tool_name, service_id = classify_question(question, provider, warnings=warnings)
     logger.info("Intent: tool=%s service=%s", tool_name, service_id)
 
     try:
@@ -190,16 +194,21 @@ def process_question(request: ChatRequest) -> ChatResponse:
                             # Discrete path representing the MOTIVATED_BY relationship
                             highlighted_paths.append([did, inc_id])
                         else:
-                            older_id, _ = get_supersedes_info(
+                            older_id, newer_id = get_supersedes_info(
                                 d, graph=result.get("graph")
                             )
                             if older_id:
                                 # Discrete path representing the SUPERSEDES relationship
                                 highlighted_paths.append([did, older_id])
+                            elif newer_id:
+                                # Discrete path representing the SUPERSEDES relationship
+                                highlighted_paths.append([did, newer_id])
                             else:
                                 highlighted_paths.append([did])
 
-    answer = generate_answer(question, result, provider, tool_name=tool_name)
+    answer = generate_answer(
+        question, result, provider, tool_name=tool_name, warnings=warnings
+    )
     graph = tool_result_to_graph_view(
         result,
         highlighted_paths=highlighted_paths if highlighted_paths else None,

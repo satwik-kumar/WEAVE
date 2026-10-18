@@ -42,6 +42,7 @@ Rules:
 5. 3-5 sentences maximum unless an onboarding brief was requested.
 6. Empty evidence -> "I couldn't find relevant information for this question."
 7. Never mention the graph database, FalkorDB, or that you are an AI.
+8. If a decision is superseded, state that its rationale was not recorded if empty, and mention the replacement decision (its title, source_id, and rationale if available).
 """
 
 
